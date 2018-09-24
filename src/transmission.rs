@@ -1,8 +1,9 @@
-pub use crate::message::{Message, MessageBuilder};
+pub use crate::message::Message;
 use reqwest::{
     Client,
     Error, header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderValue},
 };
+use serde_json::Value;
 
 #[derive(Debug)]
 pub struct Transmission {
@@ -17,7 +18,7 @@ impl Transmission {
             url: "https://api.eu.sparkpost.com/api/v1/transmissions/",
         }
     }
-    pub fn send(&self, message: &Message) -> Result<String, Error> {
+    pub fn send(&self, message: &Message) -> Result<Value, Error> {
         let client = Client::new()
             .post(self.url)
             .headers(construct_headers(self.api_key.as_str()))

@@ -12,9 +12,9 @@ use spark_post::{Transmission, Message, MessageBuilder};
 let tm = Transmission::new("sparkpost_api_key");
 let email: Message = MessageBuilder::new("sender@yourdomain.com", "Name")
          .add_recipient("name@domain.com", Some("Name"))
-         .add_subject("My Awesome email 😎")
-         .add_html("This is the html body of the email")
-         .add_text("This is the text body of the email")
+         .set_subject("My Awesome email 😎")
+         .set_html("<h1>html body of the email</h1>")
+         .set_text("text body of the email")
          .finish();
 let result = tm.send(&email);
 
