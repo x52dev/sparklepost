@@ -5,22 +5,27 @@ use reqwest::{
 };
 use serde_json::Value;
 
+pub enum ApiRegion {
+    US,
+    EU,
+}
+
 #[derive(Debug)]
 pub struct Transmission {
     api_key: String,
-    url: &'static str,
+    url: String,
 }
 
 impl Transmission {
-    pub fn new(api_key: &str) -> Self {
+    pub fn new(api_key: String, url: String) -> Self {
         Transmission {
-            api_key: api_key.into(),
-            url: "https://api.eu.sparkpost.com/api/v1/transmissions/",
+            api_key,
+            url,
         }
     }
     pub fn send(&self, message: &Message) -> Result<Value, Error> {
         let client = Client::new()
-            .post(self.url)
+            .post(self.url.as_str())
             .headers(construct_headers(self.api_key.as_str()))
             .json(&message.json());
 

@@ -1,21 +1,30 @@
 # spark_post
 ## WIP initial release
 version 0.0.1 only supports transmission api for sending emails.
-as sparkpost has a huge api, please open an issue on gitlab if you need support.
+as sparkpost has a huge api.
 
-## Example
+Please open an issue on [gitlab](https://gitlab.com/mygnu/spark_post/issues) if you need support or additional features
+
+### Usage
+```toml
+[dependencies]
+sparkpost = "0.0.1"
+
+```
+
+
+### Example
 ```rust
-extern crate spark_post;
+extern crate sparkpost;
 
-use spark_post::{Transmission, Message, MessageBuilder};
+use sparkpost::{Transmission, Message};
 
-let tm = Transmission::new("sparkpost_api_key");
-let email: Message = MessageBuilder::new("sender@yourdomain.com", "Name")
+let tm = Transmission::new("api_key".into(), "https://api.eu.sparkpost.com/api/v1".into());
+let email: Message = Message::new("sender@yourdomain.com", "Name")
          .add_recipient("name@domain.com", Some("Name"))
          .set_subject("My Awesome email 😎")
          .set_html("<h1>html body of the email</h1>")
-         .set_text("text body of the email")
-         .finish();
+         .set_text("text body of the email");
 let result = tm.send(&email);
 
 match result {
@@ -26,3 +35,7 @@ match result {
 }
 
 ```
+### TODO
+- [X] send email
+- [ ] other api features
+

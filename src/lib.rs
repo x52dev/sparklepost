@@ -5,7 +5,7 @@ extern crate pretty_assertions;
 extern crate serde_derive;
 
 pub use self::message::{EmailAddress, Message, Options};
-pub use self::transmission::Transmission;
+pub use self::transmission::{ApiRegion, Transmission};
 
 mod message;
 mod transmission;
@@ -26,7 +26,7 @@ mod tests {
     #[ignore]
     #[test]
     fn send_email() {
-        let tm = Transmission::new(get_api_key().as_str());
+        let tm = Transmission::new(get_api_key(), "https://api.eu.sparkpost.com/api/v1".into());
         let email: Message =
             Message::new(
                 EmailAddress::with_name(

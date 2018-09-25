@@ -3,7 +3,29 @@ use std::convert::From;
 
 
 /// Represents email message including some mata-data
-/// use MessageBuilder to build the email
+/// ### Example
+/// ```rust
+/// use serde_json::Value;
+/// use sparkpost::{Message, EmailAddress};
+/// 
+/// let email: Value = Message::new(EmailAddress::with_name("test@test.com", "name"))
+///        .add_recipient("tech@hgill.io".into())
+///        .set_campaign_id("my_campaign")
+///        .set_subject("email subject")
+///        .set_text("email body text")
+///        .set_html("<h1>html body</h1>")
+///        .json();
+///
+///    assert_eq!("test@test.com", email["content"]["from"]["email"].as_str().unwrap());
+///    assert_eq!("my_campaign", email["campaign_id"].as_str().unwrap());
+///    assert_eq!("name", email["content"]["from"]["name"].as_str().unwrap());
+///    assert_eq!("test@test.com", email["content"]["from"]["email"].as_str().unwrap());
+///    assert!(email["options"]["sandbox"].as_bool().unwrap());
+///    assert!(!email["options"]["click_tracking"].as_bool().unwrap());
+///    assert!(!email["options"]["open_tracking"].as_bool().unwrap());
+///    assert!(!email["options"]["transactional"].as_bool().unwrap());
+/// ```
+///
 ///
 #[derive(Debug, Serialize, Default)]
 pub struct Message {
@@ -14,19 +36,18 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn new(sender_email_address: EmailAddress) -> Message {
+    pub fn new(sender_address: EmailAddress) -> Message {
         let mut message = Message::default();
-        message.content.from = sender_email_address;
+        message.content.from = sender_address;
         message
     }
 
-    pub fn with_options(sender_email_address: EmailAddress, options: Options) -> Message {
+    pub fn with_options(sender_address: EmailAddress, options: Options) -> Message {
         let mut message = Message::default();
         message.options = options;
-        message.content.from = sender_email_address;
+        message.content.from = sender_address;
         message
     }
-    /// Adds one recipient at a time, can be called multiple times
     pub fn add_recipient(mut self, address: EmailAddress) -> Message {
         self.recipients.push(Recipient {
             address,
@@ -47,6 +68,10 @@ impl Message {
     }
     pub fn set_text(mut self, text: &str) -> Message {
         self.content.text = Some(text.to_owned());
+        self
+    }
+    pub fn set_campaign_id(mut self, campaign_id: &str) -> Message {
+        self.campaign_id = Some(campaign_id.to_owned());
         self
     }
     /// returns a json structure to be sent over http
@@ -107,7 +132,7 @@ pub struct Recipient {
 ///
 /// ### Example
 /// ```rust
-/// use spark_post::EmailAddress;
+/// use sparkpost::EmailAddress;
 ///
 /// let expected = EmailAddress::new("test@test.com");
 /// let address: EmailAddress = "test@test.com".into();
@@ -223,12 +248,12 @@ fn create_address() {
 
 #[test]
 fn create_message() {
-    let email: Value = Message::new("test@test.com".into())
+    let email: Value = Message::new(EmailAddress::with_name("test@test.com", "name"))
         .add_recipient("tech@hgill.io".into())
         .json();
 //    println!("{:#?}", email.to_string());
     assert_eq!("test@test.com", email["content"]["from"]["email"].as_str().unwrap());
-//    assert_eq!("name", email["content"]["from"]["name"].as_str().unwrap());
+    assert_eq!("name", email["content"]["from"]["name"].as_str().unwrap());
     assert_eq!("test@test.com", email["content"]["from"]["email"].as_str().unwrap());
     assert!(email["options"]["sandbox"].as_bool().unwrap());
     assert!(!email["options"]["click_tracking"].as_bool().unwrap());
@@ -239,7 +264,7 @@ fn create_message() {
 #[test]
 fn create_message_with_options() {
     let email: Value = Message::with_options(
-        EmailAddress::with_name("test@test.com", "name"),
+        "test@test.com".into(),
         Options {
             open_tracking: true,
             click_tracking: true,
@@ -251,7 +276,6 @@ fn create_message_with_options() {
         .json();
 
     assert_eq!("test@test.com", email["content"]["from"]["email"].as_str().unwrap());
-    assert_eq!("name", email["content"]["from"]["name"].as_str().unwrap());
     assert_eq!("test@test.com", email["content"]["from"]["email"].as_str().unwrap());
     assert!(email["options"]["sandbox"].as_bool().unwrap());
     assert!(email["options"]["click_tracking"].as_bool().unwrap());
@@ -267,6 +291,5 @@ fn create_options() {
     assert_eq!(false, options.open_tracking);
     assert_eq!(true, options.sandbox);
     assert_eq!(false, options.transactional);
-//    assert!(!options.click_tracking);
 }
 

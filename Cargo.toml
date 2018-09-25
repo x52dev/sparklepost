@@ -1,17 +1,17 @@
 [package]
-name = "spark_post"
-version = "0.0.0"
+name = "sparkpost"
+version = "0.0.1"
 authors = ["mygnu <tech@hgill.io>"]
 edition = "2018"
 keywords = ["email", "sparkpost","reqwest"]
-description = "Rust bindings for sparkpost email api"
+description = "Rust bindings for sparkpost email api v1"
 repository = "https://gitlab.com/mygnu/spark_post"
 readme="README.me"
 license="LGPL-3.0+"
 categories = ["api-bindings"]
 
 [lib]
-name = "spark_post"
+name = "sparkpost"
 path = "src/lib.rs"
 
 
