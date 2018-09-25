@@ -5,10 +5,6 @@ use reqwest::{
 };
 use serde_json::Value;
 
-pub enum ApiRegion {
-    US,
-    EU,
-}
 
 #[derive(Debug)]
 pub struct Transmission {

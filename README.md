@@ -8,7 +8,7 @@ Please open an issue on [gitlab](https://gitlab.com/mygnu/spark_post/issues) if 
 ### Usage
 ```toml
 [dependencies]
-sparkpost = "0.0.1"
+sparkpost = "0.0.2"
 
 ```
 

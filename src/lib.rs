@@ -1,3 +1,7 @@
+//! # sparkpost
+//!
+//! Rust bindings for sparkpost email api v1
+
 #[cfg(test)]
 #[macro_use]
 extern crate pretty_assertions;
@@ -5,7 +9,7 @@ extern crate pretty_assertions;
 extern crate serde_derive;
 
 pub use self::message::{EmailAddress, Message, Options};
-pub use self::transmission::{ApiRegion, Transmission};
+pub use self::transmission::{Transmission};
 
 mod message;
 mod transmission;

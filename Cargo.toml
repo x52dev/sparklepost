@@ -1,10 +1,11 @@
 [package]
 name = "sparkpost"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["mygnu <tech@hgill.io>"]
 edition = "2018"
 keywords = ["email", "sparkpost","reqwest"]
 description = "Rust bindings for sparkpost email api v1"
+documentation = "https://docs.rs/sparkpost"
 repository = "https://gitlab.com/mygnu/spark_post"
 readme="README.md"
 license="LGPL-3.0+"
@@ -27,5 +28,5 @@ dotenv = "^0.13.0"
 pretty_assertions = "^0.5.1"
 
 [badges]
-gitlab = {repository = "https://gitlab.com/mygnu/spark_post"}
+#gitlab = {repository = "https://gitlab.com/mygnu/spark_post"}
 maintenance = { status = "experimental" }
