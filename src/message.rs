@@ -38,14 +38,14 @@ pub struct Message {
 
 impl Message {
     /// create new message with sender emailAddress
-    pub fn new(sender_address: EmailAddress) -> Message {
+    pub fn new(sender_address: EmailAddress) -> Self {
         let mut message = Message::default();
         message.content.from = sender_address;
         message
     }
 
     /// create new message with sending options
-    pub fn with_options(sender_address: EmailAddress, options: Options) -> Message {
+    pub fn with_options(sender_address: EmailAddress, options: Options) -> Self {
         let mut message = Message::default();
         message.options = options;
         message.content.from = sender_address;
@@ -55,30 +55,30 @@ impl Message {
     /// add an address to recipient list
     /// this method can be called multiple times
     /// WARNING: it does not check for duplicates for now
-    pub fn add_recipient(mut self, address: EmailAddress) -> Message {
+    pub fn add_recipient(&mut self, address: EmailAddress) -> &mut Self {
         self.recipients.push(Recipient {
             address,
         });
         self
     }
 
-    pub fn set_subject(mut self, subject: &str) -> Message {
+    pub fn set_subject(&mut self, subject: &str) -> &mut Self {
         self.content.subject = subject.to_owned();
         self
     }
-    pub fn set_options(mut self, options: Options) -> Message {
+    pub fn set_options(&mut self, options: Options) -> &mut Self {
         self.options = options;
         self
     }
-    pub fn set_html(mut self, html: &str) -> Message {
+    pub fn set_html(&mut self, html: &str) -> &mut Self {
         self.content.html = Some(html.to_owned());
         self
     }
-    pub fn set_text(mut self, text: &str) -> Message {
+    pub fn set_text(&mut self, text: &str) -> &mut Self {
         self.content.text = Some(text.to_owned());
         self
     }
-    pub fn set_campaign_id(mut self, campaign_id: &str) -> Message {
+    pub fn set_campaign_id(&mut self, campaign_id: &str) -> &mut Self {
         self.campaign_id = Some(campaign_id.to_owned());
         self
     }

@@ -35,13 +35,13 @@ mod tests {
     #[test]
     fn send_email() {
         let tm = Transmission::new(get_api_key(), "https://api.eu.sparkpost.com/api/v1".into());
-        let email: Message =
+        let mut email: Message =
             Message::new(
                 EmailAddress::with_name(
                     "anything@sparkpostbox.com",
                     "SandBox")
-            )
-                .add_recipient("tech@hgill.io".into())
+            );
+                email.add_recipient("tech@hgill.io".into())
                 .set_subject("Testing builder email sandbox")
                 .set_html("This is the html body of the email")
                 .set_text("This is the text body of the email");
