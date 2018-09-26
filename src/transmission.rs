@@ -53,6 +53,7 @@ impl Transmission {
             url,
         }
     }
+    /// Send api request
     pub fn send(&self, message: &Message) -> Result<TransmissionResponse, ReqError> {
         let client = Client::new()
             .post(self.url.as_str())

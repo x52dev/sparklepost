@@ -1,4 +1,3 @@
-use serde_json::{to_value, Value};
 use std::convert::From;
 
 
@@ -188,6 +187,8 @@ pub struct Content {
     template_id: Option<String>,
 }
 
+#[cfg(test)]
+use serde_json::{to_value, Value};
 
 #[test]
 fn create_address() {
