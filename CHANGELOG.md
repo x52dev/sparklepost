@@ -1,3 +1,6 @@
+## Version 0.1.1
+- fixed readme typo
+
 ## Version 0.1.0
 ### Breaking changes
 - Options now all defaults to false

@@ -5,13 +5,6 @@ as sparkpost has a huge api.
 
 Please open an issue on [gitlab](https://gitlab.com/mygnu/spark_post/issues) if you need support or additional features
 
-### Usage
-```toml
-[dependencies]
-sparkpost = "0.1.0"
-
-```
-
 
 ### Example
 ```rust
