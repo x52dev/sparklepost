@@ -8,7 +8,7 @@ Please open an issue on [gitlab](https://gitlab.com/mygnu/spark_post/issues) if 
 ### Usage
 ```toml
 [dependencies]
-sparkpost = "0.0.2"
+sparkpost = "0.0.3"
 
 ```
 
@@ -19,19 +19,31 @@ extern crate sparkpost;
 
 use sparkpost::{Transmission, Message};
 
-let tm = Transmission::new("api_key".into(), "https://api.eu.sparkpost.com/api/v1".into());
-let email: Message = Message::new("sender@yourdomain.com", "Name")
-         .add_recipient("name@domain.com", Some("Name"))
-         .set_subject("My Awesome email 😎")
-         .set_html("<h1>html body of the email</h1>")
-         .set_text("text body of the email");
+let tm = Transmission::new("api_key".to_string(), "https://api.eu.sparkpost.com/api/v1".to_string());
+let mut email: Message = Message::new("sender@yourdomain.com", "Name");
+
+email.add_recipient("name@domain.com", Some("Name"))
+     .set_subject("My Awesome email 😎")
+     .set_html("<h1>html body of the email</h1>")
+     .set_text("text body of the email");
+
 let result = tm.send(&email);
 
 match result {
-    OK(response)=>{
-        println!("{:#?}", response);
-    },
-    Err(e) => println("{:#?}", e);
+     Ok(res) => {
+          match res.results {
+              Some(result) => {
+                 assert_eq!(1, result.total_accepted_recipients);
+                 assert_eq!(0, result.total_rejected_recipients);
+              }
+              None => {
+                 println!("api resonse: \n {:#?}", &res.errors.unwrap());
+              }
+          }
+      }
+      Err(error) => {
+          println!("reqwest error \n {:#?}", error);
+      }
 }
 
 ```
