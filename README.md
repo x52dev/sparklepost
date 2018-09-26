@@ -19,7 +19,7 @@ extern crate sparkpost;
 
 use sparkpost::{Transmission, Message};
 
-let tm = Transmission::new("api_key".into(), "https://api.eu.sparkpost.com/api/v1".into());
+let tm = Transmission::new("api_key".to_string(), "https://api.eu.sparkpost.com/api/v1".to_string());
 let mut email: Message = Message::new("sender@yourdomain.com", "Name");
 
 email.add_recipient("name@domain.com", Some("Name"))
@@ -30,10 +30,20 @@ email.add_recipient("name@domain.com", Some("Name"))
 let result = tm.send(&email);
 
 match result {
-    OK(response)=>{
-        println!("{:#?}", response);
-    },
-    Err(e) => println("{:#?}", e);
+     Ok(res) => {
+          match res.results {
+              Some(result) => {
+                 assert_eq!(1, result.total_accepted_recipients);
+                 assert_eq!(0, result.total_rejected_recipients);
+              }
+              None => {
+                 println!("api resonse: \n {:#?}", &res.errors.unwrap());
+              }
+          }
+      }
+      Err(error) => {
+          println!("reqwest error \n {:#?}", error);
+      }
 }
 
 ```
