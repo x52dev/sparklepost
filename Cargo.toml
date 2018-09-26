@@ -1,19 +1,14 @@
 [package]
 name = "sparkpost"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["mygnu <tech@hgill.io>"]
-edition = "2018"
 keywords = ["email", "sparkpost","reqwest"]
 description = "Rust bindings for sparkpost email api v1"
-documentation = "https://docs.rs/sparkpost"
+documentation = "https://docs.rs/crate/sparkpost"
 repository = "https://gitlab.com/mygnu/spark_post"
 readme="README.md"
 license="LGPL-3.0+"
 categories = ["api-bindings"]
-
-[lib]
-name = "sparkpost"
-path = "src/lib.rs"
 
 
 [dependencies]

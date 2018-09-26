@@ -5,8 +5,12 @@
 #[cfg(test)]
 #[macro_use]
 extern crate pretty_assertions;
+#[cfg(test)]
+extern crate dotenv;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde_json;
+extern crate reqwest;
 
 pub use self::message::{EmailAddress, Message, Options};
 pub use self::transmission::{Transmission};
@@ -50,14 +54,5 @@ mod tests {
             }
             Err(_) => {}
         }
-
-//        let email: Message =
-//            MessageBuilder::new("no-reply@email.letsorganise.app", "Let's Organise App")
-//                .add_recipient("tech@hgill.io", Some("Techey"))
-//                .set_subject("Testing Second email")
-//                .set_html("This is the html body of the email")
-//                .set_text("This is the text body of the email")
-//                .finish();
-//        tm.send(&email);
     }
 }

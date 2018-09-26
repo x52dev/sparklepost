@@ -1,4 +1,4 @@
-pub use crate::message::Message;
+pub use message::Message;
 use reqwest::{
     Client,
     Error, header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderValue},
@@ -6,6 +6,13 @@ use reqwest::{
 use serde_json::Value;
 
 
+/// sparkpost Transmission
+/// currently only supports sending email message
+/// ```rust
+/// use sparkpost::Transmission;
+/// let tm = Transmission::new("api_key_form_env".into(),
+///                            "https://api.eu.sparkpost.com/api/v1".into());
+/// ```
 #[derive(Debug)]
 pub struct Transmission {
     api_key: String,
@@ -13,6 +20,7 @@ pub struct Transmission {
 }
 
 impl Transmission {
+    /// creates new Transmission with api key and Api url
     pub fn new(api_key: String, url: String) -> Self {
         Transmission {
             api_key,

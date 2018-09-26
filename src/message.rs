@@ -5,16 +5,17 @@ use std::convert::From;
 /// Represents email message including some mata-data
 /// ### Example
 /// ```rust
-/// use serde_json::Value;
+///
+/// 
 /// use sparkpost::{Message, EmailAddress};
 /// 
-/// let email: Value = Message::new(EmailAddress::with_name("test@test.com", "name"))
+/// let email = Message::new(EmailAddress::with_name("test@test.com", "name"))
 ///        .add_recipient("tech@hgill.io".into())
 ///        .set_campaign_id("my_campaign")
 ///        .set_subject("email subject")
 ///        .set_text("email body text")
 ///        .set_html("<h1>html body</h1>")
-///        .json();
+///        .json(); // return serde_json::Value
 ///
 ///    assert_eq!("test@test.com", email["content"]["from"]["email"].as_str().unwrap());
 ///    assert_eq!("my_campaign", email["campaign_id"].as_str().unwrap());
@@ -36,24 +37,31 @@ pub struct Message {
 }
 
 impl Message {
+    /// create new message with sender emailAddress
     pub fn new(sender_address: EmailAddress) -> Message {
         let mut message = Message::default();
         message.content.from = sender_address;
         message
     }
 
+    /// create new message with sending options
     pub fn with_options(sender_address: EmailAddress, options: Options) -> Message {
         let mut message = Message::default();
         message.options = options;
         message.content.from = sender_address;
         message
     }
+
+    /// add an address to recipient list
+    /// this method can be called multiple times
+    /// WARNING: it does not check for duplicates for now
     pub fn add_recipient(mut self, address: EmailAddress) -> Message {
         self.recipients.push(Recipient {
             address,
         });
         self
     }
+
     pub fn set_subject(mut self, subject: &str) -> Message {
         self.content.subject = subject.to_owned();
         self
@@ -100,7 +108,22 @@ impl Message {
     }
 }
 
-#[derive(Debug, Serialize)]
+/// Message options for a particular Message
+/// ```rust
+/// use sparkpost::Options;
+/// let options = Options {
+///            open_tracking: false,
+///            click_tracking: false,
+///            transactional: false,
+///            sandbox: true,
+///            inline_css: false,
+///        };
+/// // or
+/// let options2 = Options::default(); // defaults to sandbox=true
+///
+/// assert_eq!(options, options2);
+/// ```
+#[derive(Debug, Serialize, PartialEq)]
 pub struct Options {
     pub open_tracking: bool,
     pub click_tracking: bool,
@@ -163,8 +186,8 @@ impl EmailAddress {
     }
 }
 
-impl From<&str> for EmailAddress {
-    fn from(email: &str) -> Self {
+impl<'a> From<&'a str> for EmailAddress {
+    fn from(email: &'a str) -> Self {
         EmailAddress {
             email: email.to_owned(),
             name: None,
