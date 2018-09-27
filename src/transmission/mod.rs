@@ -1,9 +1,12 @@
-pub use message::Message;
 use reqwest::{
     Client,
     Error as ReqError, header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderValue},
 };
-//use serde_json::Value;
+
+mod message;
+
+pub use self::message::{EmailAddress, Message, Options};
+
 
 /// Transmission result returned by the API
 ///
@@ -34,7 +37,7 @@ pub struct TransmissionResponse {
 /// Sparkpost Transmission
 /// currently only supports sending email message
 /// ```rust
-/// use sparkpost::Transmission;
+/// use sparkpost::transmission::Transmission;
 /// let tm = Transmission::new("api_key_form_env".to_string(),
 ///                            "https://api.eu.sparkpost.com/api/v1/transmissions".into());
 /// ```

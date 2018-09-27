@@ -1,7 +1,11 @@
-## Version 0.1.1
+## 0.2.0
+### Breaking changes
+- transmission released as module
+
+## 0.1.1
 - fixed readme typo
 
-## Version 0.1.0
+## 0.1.0
 ### Breaking changes
 - Options now all defaults to false
 - Transaction.send() method signature changed it now return 
@@ -23,9 +27,9 @@ a ```struct TransmissionResponse```   in the result
           .set_html("<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>")
           .set_text("Here is your plain text, {{first_name or 'you great person'}}!");
     ```
-## Version 0.0.3
+## 0.0.3
 - better documentation
 - moved to rust stable
 
-## Version 0.0.1 and 0.0.2
+## 0.0.1 and 0.0.2
 Initial release, experimental only works on nightly

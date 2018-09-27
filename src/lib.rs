@@ -12,15 +12,17 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate reqwest;
 
-pub use self::message::{EmailAddress, Message, Options};
-pub use self::transmission::{Transmission, TransmissionResponse, TransmissionApiResult, TransmissionApiError};
+//mod message;
+pub mod transmission;
 
-mod message;
-mod transmission;
+
+//pub use self::message::{EmailAddress, Message, Options};
+//use self::transmission::*;
+
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::transmission::*;
 
     fn get_api_key() -> String {
         use std::env;

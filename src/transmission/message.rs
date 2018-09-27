@@ -6,7 +6,7 @@ use std::convert::From;
 /// ```rust
 ///
 /// 
-/// use sparkpost::{Message, EmailAddress};
+/// use sparkpost::transmission::{Message, EmailAddress};
 /// 
 /// let mut email = Message::new(EmailAddress::with_name("marketing@example.sink.sparkpostmail.com", "Example Company"));
 /// email.add_recipient("wilma@example.sink.sparkpostmail.com".into())
@@ -95,7 +95,7 @@ impl Message {
 
 /// Message options for a particular Message
 /// ```rust
-/// use sparkpost::Options;
+/// use sparkpost::transmission::Options;
 /// let options = Options {
 ///            open_tracking: false,
 ///            click_tracking: false,
@@ -127,7 +127,7 @@ pub struct Recipient {
 ///
 /// ### Example
 /// ```rust
-/// use sparkpost::EmailAddress;
+/// use sparkpost::transmission::EmailAddress;
 ///
 /// let expected = EmailAddress::new("test@test.com");
 /// let address: EmailAddress = "test@test.com".into();
