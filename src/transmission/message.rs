@@ -1,19 +1,21 @@
+use serde::Serialize;
+use serde_json::to_value;
+use serde_json::Value;
 use std::convert::From;
-
 
 /// Represents email message including some mata-data
 /// ### Example
 /// ```rust
 ///
-/// 
+///
 /// use sparkpost::transmission::{Message, EmailAddress};
-/// 
+///
 /// let mut email = Message::new(EmailAddress::with_name("marketing@example.sink.sparkpostmail.com", "Example Company"));
 /// email.add_recipient("wilma@example.sink.sparkpostmail.com".into())
-///        .set_campaign_id("postman_inline_both_example")
-///        .set_subject("SparkPost inline template example")
-///        .set_html("<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>")
-///        .set_text("Here is your plain text, {{first_name or 'you great person'}}!");
+///        .campaign_id("postman_inline_both_example")
+///        .subject("SparkPost inline template example")
+///        .html("<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>")
+///        .text("Here is your plain text, {{first_name or 'you great person'}}!");
 /// ```
 /// deserialize to json structure to be sent over http
 /// ```json
@@ -62,33 +64,81 @@ impl Message {
     }
 
     /// add an address to recipient list
-    /// this method can be called multiple times
+    ///
     /// WARNING: it does not check for duplicates for now
     pub fn add_recipient(&mut self, address: EmailAddress) -> &mut Self {
         self.recipients.push(Recipient {
             address,
+            substitution_data: None,
         });
         self
     }
 
-    pub fn set_subject(&mut self, subject: &str) -> &mut Self {
+    /// same as add_recipient but can contain substitution_data that can be serialized
+    ///
+    /// Usage:
+    /// ```rust
+    ///  // #[derive(Serialize)] struct Data{company: String}
+    /// // email.add_recipient_with_substitution_data(
+    /// //       "recipient@company.com".into(),
+    /// //       Data{Company: "My Company".into()})
+    /// ```
+    pub fn add_recipient_with_substitution_data<T: Serialize>(
+        &mut self,
+        address: EmailAddress,
+        substitution_data: T,
+    ) -> &mut Self {
+        let data = to_value(substitution_data);
+
+        // TODO this feels totaly wrong here
+        // need to figure out what to do
+        let substitution_data = match data {
+            Ok(value) => Some(value),
+            _ => None,
+        };
+        self.recipients.push(Recipient {
+            address,
+            substitution_data,
+        });
+        self
+    }
+
+    pub fn subject(&mut self, subject: &str) -> &mut Self {
         self.content.subject = subject.to_owned();
         self
     }
-    pub fn set_options(&mut self, options: Options) -> &mut Self {
+    pub fn options(&mut self, options: Options) -> &mut Self {
         self.options = options;
         self
     }
-    pub fn set_html(&mut self, html: &str) -> &mut Self {
+    pub fn html(&mut self, html: &str) -> &mut Self {
         self.content.html = Some(html.to_owned());
         self
     }
-    pub fn set_text(&mut self, text: &str) -> &mut Self {
+    pub fn text(&mut self, text: &str) -> &mut Self {
         self.content.text = Some(text.to_owned());
         self
     }
-    pub fn set_campaign_id(&mut self, campaign_id: &str) -> &mut Self {
+    pub fn campaign_id(&mut self, campaign_id: &str) -> &mut Self {
         self.campaign_id = Some(campaign_id.to_owned());
+        self
+    }
+
+    /// adds attachment to Message, multiple attachments allowed
+    ///
+    /// ``` rust
+    /// use sparkpost::transmission::{Message, Attachment};
+    ///
+    /// let mut email = Message::new("marketing@example.sink.sparkpostmail.com".into());
+    /// email.add_recipient("wilma@example.sink.sparkpostmail.com".into())
+    ///     .add_attachment(Attachment {
+    ///        file_type: "image/png".into(),
+    ///        name: "AnImage.png".into(),
+    ///        data: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAXxJREFUOBFjvJVg84P5718WBjLAX2bmPyxMf/+xMDH8YyZDPwPDXwYGJkIaOXTNGdiUtHAqI2jA/18/GUQzGsg3gMfKg4FVQo6BiYcPqyF4XcChaczA4+DP8P//f4b/P3+SZgAzvxCDSGYjAyMjI8PvZw+AoYXdLuyiQLtE0uoZWAREwLb+fnKXQTipkngXcJu7MnACQx8G2FX1GHgs3bDGBlYX8HlFM/z9+JbhzewWhmf1CQyfti9j+PfzBwO/ZxTMTDiNmQKBfmZX1GB42V/K8P38YbDCX/dvMDAwMzPwuYbBNcIYmC4AhfjvXwx/376AqQHTf96+ZPj34xuKGIiDaQBQ8PPBTQwCoZkMjJzcYA3MgqIMAr7xDJ/3rAHzkQnGO7FWf5gZ/qLmBSZmBoHgNAZee1+Gf18/MzCyczJ83LyQ4fPetch6Gf4xMP3FbgBMGdAgJqAr/n37zABMTTBROA0ygAWUJUG5Civ4B8xwX78CpbD6FJiHmf4AAFicbTMTr5jAAAAAAElFTkSuQmCC".into(),
+    ///    });
+    /// ```
+    pub fn add_attachment(&mut self, attachment: Attachment) -> &mut Self {
+        self.content.attachments.push(attachment);
         self
     }
 }
@@ -96,6 +146,7 @@ impl Message {
 /// Message options for a particular Message
 /// ```rust
 /// use sparkpost::transmission::Options;
+///
 /// let options = Options {
 ///            open_tracking: false,
 ///            click_tracking: false,
@@ -119,9 +170,11 @@ pub struct Options {
 
 #[derive(Debug, Serialize, Default)]
 pub struct Recipient {
-    address: EmailAddress,
-}
+    pub address: EmailAddress,
 
+    /// holds option Json value
+    pub substitution_data: Option<Value>,
+}
 
 /// Email address with name
 ///
@@ -169,13 +222,25 @@ impl<'a> From<&'a str> for EmailAddress {
 
 impl From<String> for EmailAddress {
     fn from(email: String) -> Self {
-        EmailAddress {
-            email,
-            name: None,
-        }
+        EmailAddress { email, name: None }
     }
 }
 
+/// Attachment data
+#[derive(Debug, Serialize, Default)]
+pub struct Attachment {
+    /// Name of the file
+    /// i.e. 'file_name.png'
+    pub name: String,
+
+    /// File mime type
+    /// i.e. 'image/png'
+    #[serde(rename = "type")]
+    pub file_type: String,
+
+    /// base64 encoded data
+    pub data: String,
+}
 
 #[derive(Debug, Serialize, Default)]
 pub struct Content {
@@ -185,10 +250,8 @@ pub struct Content {
     text: Option<String>,
     html: Option<String>,
     template_id: Option<String>,
+    attachments: Vec<Attachment>,
 }
-
-#[cfg(test)]
-use serde_json::{to_value, Value};
 
 #[test]
 fn create_address() {
@@ -203,9 +266,18 @@ fn create_message() {
 
     let json_value: Value = to_value(email).unwrap();
 
-    assert_eq!("test@test.com", json_value["content"]["from"]["email"].as_str().unwrap());
-    assert_eq!("name", json_value["content"]["from"]["name"].as_str().unwrap());
-    assert_eq!("test@test.com", json_value["content"]["from"]["email"].as_str().unwrap());
+    assert_eq!(
+        "test@test.com",
+        json_value["content"]["from"]["email"].as_str().unwrap()
+    );
+    assert_eq!(
+        "name",
+        json_value["content"]["from"]["name"].as_str().unwrap()
+    );
+    assert_eq!(
+        "test@test.com",
+        json_value["content"]["from"]["email"].as_str().unwrap()
+    );
     assert!(!json_value["options"]["sandbox"].as_bool().unwrap());
     assert!(!json_value["options"]["click_tracking"].as_bool().unwrap());
     assert!(!json_value["options"]["open_tracking"].as_bool().unwrap());
@@ -226,13 +298,51 @@ fn create_message_with_options() {
     );
     let json_value = to_value(email).unwrap();
 
-    assert_eq!("test@test.com", json_value["content"]["from"]["email"].as_str().unwrap());
-    assert_eq!("test@test.com", json_value["content"]["from"]["email"].as_str().unwrap());
+    assert_eq!(
+        "test@test.com",
+        json_value["content"]["from"]["email"].as_str().unwrap()
+    );
+    assert_eq!(
+        "test@test.com",
+        json_value["content"]["from"]["email"].as_str().unwrap()
+    );
     assert!(json_value["options"]["sandbox"].as_bool().unwrap());
     assert!(json_value["options"]["click_tracking"].as_bool().unwrap());
     assert!(json_value["options"]["open_tracking"].as_bool().unwrap());
     assert!(json_value["options"]["transactional"].as_bool().unwrap());
     assert!(!json_value["options"]["inline_css"].as_bool().unwrap());
+}
+
+#[test]
+fn create_message_with_substitute_data() {
+    let mut email: Message = Message::default();
+
+    #[derive(Debug, Serialize)]
+    struct Substitute {
+        pub any_field: String,
+    }
+    email.add_recipient_with_substitution_data(
+        "name@domain.com".into(),
+        Substitute {
+            any_field: "any_value".into(),
+        },
+    );
+
+    // let json_value = to_value(email).unwrap();
+
+    // assert_eq!(
+    //     "test@test.com",
+    //     json_value["content"]["from"]["email"].as_str().unwrap()
+    // );
+    // assert_eq!(
+    //     "test@test.com",
+    //     json_value["content"]["from"]["email"].as_str().unwrap()
+    // );
+    // assert!(json_value["options"]["sandbox"].as_bool().unwrap());
+    // assert!(json_value["options"]["click_tracking"].as_bool().unwrap());
+    // assert!(json_value["options"]["open_tracking"].as_bool().unwrap());
+    // assert!(json_value["options"]["transactional"].as_bool().unwrap());
+    // assert!(!json_value["options"]["inline_css"].as_bool().unwrap());
 }
 
 #[test]
@@ -243,4 +353,3 @@ fn create_options() {
     assert_eq!(false, options.sandbox);
     assert_eq!(false, options.transactional);
 }
-

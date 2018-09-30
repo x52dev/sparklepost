@@ -1,6 +1,6 @@
 # sparkpost
 ## WIP initial release
-
+[sparkpost](https://crates.io/crates/sparkpost)
 [![pipeline status](https://gitlab.com/mygnu/spark_post/badges/master/pipeline.svg)](https://gitlab.com/mygnu/spark_post/commits/master)
 
 Currently only supports transmission api for sending emails.
