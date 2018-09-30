@@ -1,3 +1,7 @@
+## 0.2.1
+- fix broken readme
+- move example to docs
+
 ## 0.2.0
 
 ### Breaking changes
