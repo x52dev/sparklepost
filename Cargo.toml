@@ -7,7 +7,7 @@ description = "Rust bindings for sparkpost email api v1"
 documentation = "https://docs.rs/crate/sparkpost"
 repository = "https://gitlab.com/mygnu/spark_post"
 readme="README.md"
-license="LGPL-3.0+"
+license="MPL-2.0+/LGPL-3.0+"
 categories = ["api-bindings","web-programming"]
 
 
@@ -26,3 +26,7 @@ pretty_assertions = "0.5"
 [badges]
 #gitlab = {repository = "https://gitlab.com/mygnu/spark_post"}
 maintenance = { status = "experimental" }
+
+[profile.release]
+lto = true
+opt-level = 3
