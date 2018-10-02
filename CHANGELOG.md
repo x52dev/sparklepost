@@ -1,10 +1,20 @@
+## 0.3.0
+
+### breaking changes
+
+- message construction and emailAddress construction changed
+- added support for using stored recipients list from the api
+- Improved tests and documentation
+
 ## 0.2.1
+
 - fix broken readme
 - move example to docs
 
 ## 0.2.0
 
 ### Breaking changes
+
 - Message method names changed
 - Message initial support for file attachments
 - transmission released as module

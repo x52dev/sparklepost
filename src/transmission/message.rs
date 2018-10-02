@@ -1,7 +1,6 @@
-use serde::Serialize;
-use serde_json::to_value;
 use serde_json::Value;
-use std::convert::From;
+
+use super::recipients::*;
 
 /// Represents email message including some mata-data
 /// ### Example
@@ -10,7 +9,7 @@ use std::convert::From;
 ///
 /// use sparkpost::transmission::{Message, EmailAddress};
 ///
-/// let mut email = Message::new(EmailAddress::with_name("marketing@example.sink.sparkpostmail.com", "Example Company"));
+/// let mut email = Message::new(EmailAddress::new("marketing@example.sink.sparkpostmail.com", "Example Company"));
 /// email.add_recipient("wilma@example.sink.sparkpostmail.com".into())
 ///        .campaign_id("postman_inline_both_example")
 ///        .subject("SparkPost inline template example")
@@ -42,8 +41,11 @@ use std::convert::From;
 #[derive(Debug, Serialize, Default)]
 pub struct Message {
     pub options: Options,
+    pub description: Option<String>,
     pub campaign_id: Option<String>,
-    pub recipients: Vec<Recipient>,
+    pub metadata: Option<Value>,
+    pub substitution_data: Option<Value>,
+    pub recipients: Recipients,
     pub content: Content,
 }
 
@@ -63,44 +65,34 @@ impl Message {
         message
     }
 
-    /// add an address to recipient list
+    /// set an recipient list stored in the api
+    /// replaces local recipients variable with a Sparkpost API list id
     ///
-    /// WARNING: it does not check for duplicates for now
-    pub fn add_recipient(&mut self, address: EmailAddress) -> &mut Self {
-        self.recipients.push(Recipient {
-            address,
-            substitution_data: None,
-        });
+    /// see [Transport API ref](https://developers.sparkpost.com/api/transmissions/#header-stored-recipient-list)
+    pub fn recipient_list(&mut self, list_name: &str) -> &mut Self {
+        self.recipients = Recipients::ListName(list_name.into());
         self
     }
 
-    /// same as add_recipient but can contain substitution_data that can be serialized
+    /// add an address to recipient list
     ///
-    /// Usage:
-    /// ```rust
-    ///  // #[derive(Serialize)] struct Data{company: String}
-    /// // email.add_recipient_with_substitution_data(
-    /// //       "recipient@company.com".into(),
-    /// //       Data{Company: "My Company".into()})
-    /// ```
-    pub fn add_recipient_with_substitution_data<T: Serialize>(
-        &mut self,
-        address: EmailAddress,
-        substitution_data: T,
-    ) -> &mut Self {
-        let data = to_value(substitution_data);
+    /// Recipient is replaced if they have same email address
+    pub fn add_recipient(&mut self, recipient: Recipient) -> &mut Self {
+        match self.recipients {
+            Recipients::ListName(_) => self.recipients = Recipients::LocalList(vec![recipient]),
+            Recipients::LocalList(ref mut list) => {
+                list.retain(|ref rec| {
+                    rec.address.email.as_str() != recipient.address.email.as_str()
+                });
+                list.push(recipient);
+            }
+        }
 
-        // TODO this feels totaly wrong here
-        // need to figure out what to do
-        let substitution_data = match data {
-            Ok(value) => Some(value),
-            _ => None,
-        };
-        self.recipients.push(Recipient {
-            address,
-            substitution_data,
-        });
         self
+    }
+
+    pub fn get_recipients(&self) -> &Recipients {
+        &self.recipients
     }
 
     pub fn subject(&mut self, subject: &str) -> &mut Self {
@@ -168,64 +160,6 @@ pub struct Options {
     pub inline_css: bool,
 }
 
-#[derive(Debug, Serialize, Default)]
-pub struct Recipient {
-    pub address: EmailAddress,
-
-    /// holds option Json value
-    pub substitution_data: Option<Value>,
-}
-
-/// Email address with name
-///
-/// ### Example
-/// ```rust
-/// use sparkpost::transmission::EmailAddress;
-///
-/// let expected = EmailAddress::new("test@test.com");
-/// let address: EmailAddress = "test@test.com".into();
-///
-/// assert_eq!(expected, address);
-///
-/// // create address with name
-/// let address = EmailAddress::with_name("test@test.com", "Joe Blow");
-///```
-#[derive(Debug, Serialize, Default, PartialEq)]
-pub struct EmailAddress {
-    pub(crate) email: String,
-    pub(crate) name: Option<String>,
-}
-
-impl EmailAddress {
-    pub fn new(email: &str) -> Self {
-        EmailAddress {
-            email: email.to_owned(),
-            name: None,
-        }
-    }
-    pub fn with_name(email: &str, name: &str) -> Self {
-        EmailAddress {
-            email: email.to_owned(),
-            name: Some(name.to_owned()),
-        }
-    }
-}
-
-impl<'a> From<&'a str> for EmailAddress {
-    fn from(email: &'a str) -> Self {
-        EmailAddress {
-            email: email.to_owned(),
-            name: None,
-        }
-    }
-}
-
-impl From<String> for EmailAddress {
-    fn from(email: String) -> Self {
-        EmailAddress { email, name: None }
-    }
-}
-
 /// Attachment data
 #[derive(Debug, Serialize, Default)]
 pub struct Attachment {
@@ -242,114 +176,159 @@ pub struct Attachment {
     pub data: String,
 }
 
+/// Email contents
 #[derive(Debug, Serialize, Default)]
 pub struct Content {
-    from: EmailAddress,
-    subject: String,
-    tags: Option<Vec<String>>,
-    text: Option<String>,
-    html: Option<String>,
-    template_id: Option<String>,
-    attachments: Vec<Attachment>,
+    pub from: EmailAddress,
+    pub subject: String,
+    pub tags: Option<Vec<String>>,
+    pub text: Option<String>,
+    pub html: Option<String>,
+    pub template_id: Option<String>,
+    pub attachments: Vec<Attachment>,
 }
 
-#[test]
-fn create_address() {
-    let address: EmailAddress = "test@test.com".into();
-    assert_eq!("test@test.com", address.email.as_str());
-}
-
-#[test]
-fn create_message() {
-    let mut email: Message = Message::new(EmailAddress::with_name("test@test.com", "name"));
-    email.add_recipient("tech@hgill.io".into());
-
-    let json_value: Value = to_value(email).unwrap();
-
-    assert_eq!(
-        "test@test.com",
-        json_value["content"]["from"]["email"].as_str().unwrap()
-    );
-    assert_eq!(
-        "name",
-        json_value["content"]["from"]["name"].as_str().unwrap()
-    );
-    assert_eq!(
-        "test@test.com",
-        json_value["content"]["from"]["email"].as_str().unwrap()
-    );
-    assert!(!json_value["options"]["sandbox"].as_bool().unwrap());
-    assert!(!json_value["options"]["click_tracking"].as_bool().unwrap());
-    assert!(!json_value["options"]["open_tracking"].as_bool().unwrap());
-    assert!(!json_value["options"]["transactional"].as_bool().unwrap());
-}
-
-#[test]
-fn create_message_with_options() {
-    let email: Message = Message::with_options(
-        "test@test.com".into(),
-        Options {
-            open_tracking: true,
-            click_tracking: true,
-            transactional: true,
-            sandbox: true,
-            inline_css: false,
-        },
-    );
-    let json_value = to_value(email).unwrap();
-
-    assert_eq!(
-        "test@test.com",
-        json_value["content"]["from"]["email"].as_str().unwrap()
-    );
-    assert_eq!(
-        "test@test.com",
-        json_value["content"]["from"]["email"].as_str().unwrap()
-    );
-    assert!(json_value["options"]["sandbox"].as_bool().unwrap());
-    assert!(json_value["options"]["click_tracking"].as_bool().unwrap());
-    assert!(json_value["options"]["open_tracking"].as_bool().unwrap());
-    assert!(json_value["options"]["transactional"].as_bool().unwrap());
-    assert!(!json_value["options"]["inline_css"].as_bool().unwrap());
-}
-
-#[test]
-fn create_message_with_substitute_data() {
-    let mut email: Message = Message::default();
+#[cfg(test)]
+mod test {
+    use super::*;
+    use serde_json::to_value;
 
     #[derive(Debug, Serialize)]
     struct Substitute {
         pub any_field: String,
     }
-    email.add_recipient_with_substitution_data(
-        "name@domain.com".into(),
-        Substitute {
+
+    #[test]
+    fn create_message() {
+        let mut email: Message = Message::new(EmailAddress::new("test@test.com", "name"));
+        email.add_recipient("tech@hgill.io".into());
+        email.recipient_list("my_list");
+
+        let json_value: Value = to_value(&email).unwrap();
+
+        assert_eq!(
+            "test@test.com",
+            json_value["content"]["from"]["email"].as_str().unwrap()
+        );
+        assert_eq!(
+            "name",
+            json_value["content"]["from"]["name"].as_str().unwrap()
+        );
+        assert_eq!(
+            "test@test.com",
+            json_value["content"]["from"]["email"].as_str().unwrap()
+        );
+        assert!(!json_value["options"]["sandbox"].as_bool().unwrap());
+        assert!(!json_value["options"]["click_tracking"].as_bool().unwrap());
+        assert!(!json_value["options"]["open_tracking"].as_bool().unwrap());
+        assert!(!json_value["options"]["transactional"].as_bool().unwrap());
+        // println!("{:#?}", json_value);
+    }
+
+    #[test]
+    fn create_message_with_options() {
+        let email: Message = Message::with_options(
+            "test@test.com".into(),
+            Options {
+                open_tracking: true,
+                click_tracking: true,
+                transactional: true,
+                sandbox: true,
+                inline_css: false,
+            },
+        );
+        let json_value = to_value(email).unwrap();
+
+        assert_eq!(
+            "test@test.com",
+            json_value["content"]["from"]["email"].as_str().unwrap()
+        );
+        assert_eq!(
+            "test@test.com",
+            json_value["content"]["from"]["email"].as_str().unwrap()
+        );
+        assert!(json_value["options"]["sandbox"].as_bool().unwrap());
+        assert!(json_value["options"]["click_tracking"].as_bool().unwrap());
+        assert!(json_value["options"]["open_tracking"].as_bool().unwrap());
+        assert!(json_value["options"]["transactional"].as_bool().unwrap());
+        assert!(!json_value["options"]["inline_css"].as_bool().unwrap());
+    }
+
+    #[test]
+    fn create_message_with_substitute_data() {
+        let mut email: Message = Message::default();
+
+        let data = Substitute {
             any_field: "any_value".into(),
-        },
-    );
+        };
 
-    // let json_value = to_value(email).unwrap();
+        email.add_recipient(Recipient {
+            address: "name@domain.com".into(),
+            substitution_data: Some(serde_json::to_value(data).unwrap()),
+        });
+        let json_value = to_value(email).unwrap();
+        // println!("{:#?}", &json_value);
 
-    // assert_eq!(
-    //     "test@test.com",
-    //     json_value["content"]["from"]["email"].as_str().unwrap()
-    // );
-    // assert_eq!(
-    //     "test@test.com",
-    //     json_value["content"]["from"]["email"].as_str().unwrap()
-    // );
-    // assert!(json_value["options"]["sandbox"].as_bool().unwrap());
-    // assert!(json_value["options"]["click_tracking"].as_bool().unwrap());
-    // assert!(json_value["options"]["open_tracking"].as_bool().unwrap());
-    // assert!(json_value["options"]["transactional"].as_bool().unwrap());
-    // assert!(!json_value["options"]["inline_css"].as_bool().unwrap());
-}
+        assert_eq!(
+            json_value["recipients"][0]["address"]["email"],
+            "name@domain.com"
+        );
+    }
 
-#[test]
-fn create_options() {
-    let options = Options::default();
-    assert_eq!(false, options.click_tracking);
-    assert_eq!(false, options.open_tracking);
-    assert_eq!(false, options.sandbox);
-    assert_eq!(false, options.transactional);
+    #[test]
+    fn test_message_recipient_duplication() {
+        let mut message = Message::default();
+        let recipient = "email@domain.com".into();
+        let recipient1 = "email@domain.com".into();
+        message.add_recipient(recipient);
+
+        // println!("{:#?}", &message);
+        match message.get_recipients() {
+            Recipients::LocalList(ref list) => {
+                assert_eq!(list.get(0), Some(&recipient1));
+            }
+            _ => assert!(false),
+        };
+
+        message.add_recipient(Recipient {
+            address: "email@domain.com".into(),
+            substitution_data: Some(
+                serde_json::to_value(Substitute {
+                    any_field: "any_value".into(),
+                })
+                .unwrap(),
+            ),
+        });
+
+        match message.get_recipients() {
+            Recipients::LocalList(ref list) => {
+                assert_eq!(list.len(), 1);
+            }
+            _ => assert!(false),
+        };
+
+        let json_value = to_value(&message).unwrap();
+        // println!("{:#?}", &json_value);
+
+        assert_eq!(
+            json_value["recipients"][0]["substitution_data"]["any_field"],
+            "any_value"
+        );
+
+        message.recipient_list("mylist");
+
+        let json_value = to_value(&message).unwrap();
+        // println!("{:#?}", &json_value);
+
+        assert_eq!(json_value["recipients"]["list_id"], "mylist");
+    }
+
+    #[test]
+    fn create_options() {
+        let options = Options::default();
+        assert_eq!(false, options.click_tracking);
+        assert_eq!(false, options.open_tracking);
+        assert_eq!(false, options.sandbox);
+        assert_eq!(false, options.transactional);
+    }
 }
