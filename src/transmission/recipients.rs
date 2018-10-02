@@ -27,10 +27,7 @@ impl<'a> From<&'a str> for Recipient {
 impl From<String> for Recipient {
   fn from(email: String) -> Self {
     Recipient {
-      address: EmailAddress {
-        email: email,
-        name: None,
-      },
+      address: EmailAddress { email, name: None },
       substitution_data: None,
     }
   }

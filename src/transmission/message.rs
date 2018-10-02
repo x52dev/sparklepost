@@ -264,7 +264,7 @@ mod test {
 
         email.add_recipient(Recipient {
             address: "name@domain.com".into(),
-            substitution_data: Some(serde_json::to_value(data).unwrap()),
+            substitution_data: Some(to_value(data).unwrap()),
         });
         let json_value = to_value(email).unwrap();
         // println!("{:#?}", &json_value);
@@ -293,7 +293,7 @@ mod test {
         message.add_recipient(Recipient {
             address: "email@domain.com".into(),
             substitution_data: Some(
-                serde_json::to_value(Substitute {
+                to_value(Substitute {
                     any_field: "any_value".into(),
                 })
                 .unwrap(),
