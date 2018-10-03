@@ -6,7 +6,9 @@
 //!
 //! use sparkpost::transmission::{Transmission, Message, EmailAddress, TransmissionResponse};
 //!
-//! let tm = Transmission::new("api_key".to_string(), "https://api.eu.sparkpost.com/api/v1".to_string());
+//! let tm = Transmission::new("api_key".to_string());
+//! // to create for EU version use
+//! let tm = Transmission::new_eu("api_key".to_string());
 //! let mut email: Message = Message::new(
 //!                              EmailAddress::new("marketing@example.sink.sparkpostmail.com", "Example Company")
 //!                          );
@@ -41,7 +43,7 @@ use reqwest::{
     header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     Client, Error,
 };
-
+use std::collections::HashMap;
 mod message;
 mod recipients;
 
@@ -83,38 +85,100 @@ pub enum TransmissionResponse {
 /// currently only supports sending email message
 /// ```rust
 /// use sparkpost::transmission::Transmission;
-/// let tm = Transmission::new("api_key_form_env".to_string(),
-///                            "https://api.eu.sparkpost.com/api/v1/transmissions".into());
+/// let tm = Transmission::new("api_key_form_env".to_string());
 /// ```
 /// for more info see [https://developers.sparkpost.com/api/transmissions/](https://developers.sparkpost.com/api/transmissions/)
 #[derive(Debug)]
 pub struct Transmission {
     api_key: String,
     url: String,
+    client: Client,
 }
 
 impl Transmission {
-    /// creates new Transmission with api key and Api url
-    pub fn new(api_key: String, url: String) -> Self {
-        Transmission { api_key, url }
+    /// creates new Transmission with api key for global version
+    pub fn new(api_key: String) -> Self {
+        Transmission {
+            api_key,
+            url: "https://api.sparkpost.com/api/v1/transmissions".to_owned(),
+            client: Client::new(),
+        }
+    }
+
+    /// creates new Transmission with api key for EU version
+    pub fn new_eu(api_key: String) -> Self {
+        Transmission {
+            api_key,
+            url: "https://api.eu.sparkpost.com/api/v1/transmissions".to_owned(),
+            client: Client::new(),
+        }
     }
     /// Send api request
     pub fn send(&self, message: &Message) -> Result<TransmissionResponse, ReqError> {
-        let client = Client::new()
-            .post(self.url.as_str())
-            .headers(construct_headers(self.api_key.as_ref()))
-            .json(message);
-
-        client.send()?.json()
+        self.client
+            .post(&self.url)
+            .headers(self.construct_headers(None))
+            .json(message)
+            .send()?
+            .json()
     }
-}
+    /// Retrieve a Scheduled Transmission from API
+    pub fn scheduled_tm_by_id(
+        &self,
+        transmission_id: &str,
+    ) -> Result<TransmissionResponse, ReqError> {
+        // let url = format!("{}/{}", self.url, transmission_id);
+        let url = self.url.clone() + "/" + transmission_id;
+        self.client
+            .get(&url)
+            .headers(self.construct_headers(None))
+            .send()?
+            .json()
+    }
 
-fn construct_headers(api_key: &str) -> HeaderMap {
-    let mut headers = HeaderMap::new();
-    headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
-    headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-    headers.insert(AUTHORIZATION, HeaderValue::from_str(api_key).unwrap());
-    headers
+    /// Retrieve all Scheduled Transmissions from API
+    ///
+    /// Example
+    /// ```rust
+    /// use sparkpost::transmission::Transmission;
+    /// use std::collections::HashMap;
+    /// let tm = Transmission::new("api_key".into());
+    ///
+    /// let mut headers = HashMap::new();
+    /// headers.insert("campaign_id", "your_campaingn_id");
+    /// headers.insert("template_id", "your_template_id");
+    ///
+    /// // filter with headers
+    /// let transmissions = tm.scheduled_transmissions(Some(&headers));
+    ///
+    /// // or for all transmissions
+    /// let transmissions = tm.scheduled_transmissions(None);
+    ///
+    /// ```
+    pub fn scheduled_transmissions(
+        &self,
+        header_map: Option<&HashMap<&'static str, &str>>,
+    ) -> Result<TransmissionResponse, ReqError> {
+        self.client
+            .get(&self.url)
+            .headers(self.construct_headers(header_map))
+            .send()?
+            .json()
+    }
+
+    fn construct_headers(&self, header_map: Option<&HashMap<&'static str, &str>>) -> HeaderMap {
+        let mut headers = HeaderMap::new();
+        headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
+        headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        headers.insert(AUTHORIZATION, HeaderValue::from_str(&self.api_key).unwrap());
+
+        if let Some(header_map) = header_map {
+            for (name, value) in header_map {
+                headers.insert(*name, HeaderValue::from_str(value).unwrap());
+            }
+        }
+        headers
+    }
 }
 
 #[cfg(test)]
@@ -125,18 +189,14 @@ mod tests {
         use dotenv::dotenv;
         use std::env;
         dotenv().ok();
-        let api_key = env::var("SPARKPOST_API_KEY").expect("SPARKPOST_API_KEY must be set");
-        api_key
+        env::var("SPARKPOST_API_KEY").expect("SPARKPOST_API_KEY must be set")
     }
 
     /// actually test the api
     #[ignore]
     #[test]
     fn send_email() {
-        let tm = Transmission::new(
-            get_api_key(),
-            "https://api.eu.sparkpost.com/api/v1/transmissions".into(),
-        );
+        let tm = Transmission::new_eu(get_api_key());
         let mut email: Message =
             Message::new(EmailAddress::new("hello@email.letsorganise.app", "noreply"));
         email
