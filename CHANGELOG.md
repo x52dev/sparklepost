@@ -6,6 +6,7 @@
 - Transmission initialization now has both global and EU options. No need to provide Url
 - Message contents are public only to crate
 - Message options now take chrono Utf DateTime as start_time value
+- Message can have both substitution data and metadata
 
 ## 0.3.0
 

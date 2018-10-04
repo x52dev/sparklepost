@@ -10,7 +10,7 @@
 //! // to create for EU version use
 //! let tm = Transmission::new_eu("api_key".to_string());
 //! let mut email: Message = Message::new(
-//!                              EmailAddress::new("marketing@example.sink.sparkpostmail.com", "Example Company")
+//!                              EmailAddress::new("marketing@company.com", "Example Company")
 //!                          );
 //!
 //! email.add_recipient("name@domain.com".into())
@@ -39,6 +39,7 @@
 //! }
 //!
 //! ```
+
 use reqwest::{
     header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     Client, Error,
@@ -123,10 +124,7 @@ impl Transmission {
             .json()
     }
     /// Retrieve a Scheduled Transmission from API
-    pub fn scheduled_tm_by_id(
-        &self,
-        transmission_id: &str,
-    ) -> Result<TransmissionResponse, ReqError> {
+    pub fn scheduled_by_id(&self, transmission_id: &str) -> Result<TransmissionResponse, ReqError> {
         // let url = format!("{}/{}", self.url, transmission_id);
         let url = self.url.clone() + "/" + transmission_id;
         self.client

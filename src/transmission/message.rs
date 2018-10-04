@@ -1,5 +1,6 @@
 use chrono::prelude::*;
-use serde_json::Value;
+use serde::ser::Serialize;
+use serde_json::{to_value, Value};
 
 use super::recipients::*;
 
@@ -17,7 +18,7 @@ use super::recipients::*;
 ///        .html("<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>")
 ///        .text("Here is your plain text, {{first_name or 'you great person'}}!");
 /// ```
-/// deserialize to json structure to be sent over http
+/// deserialized json looks similar to this
 /// ```json
 /// {
 ///  "campaign_id": "postman_inline_both_example",
@@ -92,9 +93,6 @@ impl Message {
         self
     }
 
-    pub fn get_recipients(&self) -> &Recipients {
-        &self.recipients
-    }
     /// set message subject
     pub fn subject(&mut self, subject: &str) -> &mut Self {
         self.content.subject = subject.to_owned();
@@ -123,6 +121,18 @@ impl Message {
     /// set template id for content
     pub fn template_id(&mut self, template_id: &str) -> &mut Self {
         self.content.template_id = Some(template_id.to_owned());
+        self
+    }
+
+    /// set substitution_data
+    pub fn substitution_data<T: Serialize>(&mut self, data: T) -> &mut Self {
+        self.substitution_data = Some(to_value(data).expect("Data cannot be searized"));
+        self
+    }
+
+    /// set metadata
+    pub fn metadata<T: Serialize>(&mut self, data: T) -> &mut Self {
+        self.metadata = Some(to_value(data).expect("Data cannot be searized"));
         self
     }
 
@@ -298,7 +308,7 @@ mod test {
         message.add_recipient(recipient);
 
         // println!("{:#?}", &message);
-        match message.get_recipients() {
+        match message.recipients {
             Recipients::LocalList(ref list) => {
                 assert_eq!(list.get(0), Some(&recipient1));
             }
@@ -315,7 +325,7 @@ mod test {
             ),
         });
 
-        match message.get_recipients() {
+        match message.recipients {
             Recipients::LocalList(ref list) => {
                 assert_eq!(list.len(), 1);
             }
