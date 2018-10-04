@@ -4,9 +4,7 @@
 #![cfg_attr(docs_rs_workaround, feature(extern_prelude))]
 //! # sparkpost
 //!
-//! Rust bindings for sparkpost email api v1
-//! ## WARNING!
-//! ### Work in Progress, Expect breaking changes
+//! rust api for [sparkpost](https://sparkpost.com) email service
 
 #[macro_use]
 extern crate serde_derive;

@@ -1,5 +1,7 @@
 ## 0.4.0
 
+### Full Example in example dir
+
 ### Breaking Changes
 
 - added method to set campaign_id for message
