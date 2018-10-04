@@ -1,6 +1,16 @@
+## 0.4.0
+
+### Breaking Changes
+
+- added method to set campaign_id for message
+- Transmission initialization now has both global and EU options. No need to provide Url
+- Message contents are public only to crate
+- Message options now take chrono Utf DateTime as start_time value
+- Message can have both substitution data and metadata
+
 ## 0.3.0
 
-### breaking changes
+### Breaking Changes
 
 - message construction and emailAddress construction changed
 - added support for using stored recipients list from the api
@@ -13,7 +23,7 @@
 
 ## 0.2.0
 
-### Breaking changes
+### Breaking Changes
 
 - Message method names changed
 - Message initial support for file attachments
@@ -27,7 +37,7 @@
 
 ## 0.1.0
 
-### Breaking changes
+### Breaking Changes
 
 - Options now all defaults to false
 - Transaction.send() method signature changed it now return

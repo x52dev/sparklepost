@@ -1,15 +1,33 @@
-use serde::ser::{SerializeSeq, SerializeStruct, Serializer};
-use serde::Serialize;
-use serde_json::Value;
+use serde::{
+  ser::{SerializeSeq, SerializeStruct, Serializer},
+  Serialize,
+};
+use serde_json::{to_value, Value};
 use std::convert::From;
 
 /// Email Recipient
+/// Example
+/// ```rust
+/// extern crate sparkpost;
+///
+/// use sparkpost::transmission::Recipient;
+///
+/// let recipient = Recipient::from("test@test.com");
+///  ```
 #[derive(Debug, Serialize, Default, PartialEq)]
 pub struct Recipient {
-  pub address: EmailAddress,
+  pub(crate) address: EmailAddress,
+  pub(crate) substitution_data: Option<Value>,
+}
 
-  /// holds option Json value
-  pub substitution_data: Option<Value>,
+impl Recipient {
+  /// create recipient with substitute data for any type that implements Serialize from serde
+  pub fn with_substitution<T: Serialize>(address: EmailAddress, data: T) -> Self {
+    Recipient {
+      address,
+      substitution_data: Some(to_value(data).expect("unable to serialize data")),
+    }
+  }
 }
 
 impl<'a> From<&'a str> for Recipient {
@@ -43,7 +61,6 @@ impl From<EmailAddress> for Recipient {
 }
 
 #[derive(Debug)]
-
 pub enum Recipients {
   LocalList(Vec<Recipient>),
   ListName(String),
@@ -96,12 +113,7 @@ pub struct EmailAddress {
 }
 
 impl EmailAddress {
-  // pub fn new(email: &str) -> Self {
-  //   EmailAddress {
-  //     email: email.to_owned(),
-  //     name: None,
-  //   }
-  // }
+  /// create new email address with email and name
   pub fn new(email: &str, name: &str) -> Self {
     EmailAddress {
       email: email.to_owned(),
@@ -139,10 +151,7 @@ mod test {
     let data = Data {
       name: "Name".to_owned(),
     };
-    Recipient {
-      address: create_address(),
-      substitution_data: Some(to_value(data).unwrap()),
-    }
+    Recipient::with_substitution(create_address(), data)
   }
 
   fn create_address() -> EmailAddress {
@@ -195,7 +204,8 @@ mod test {
       address: create_address(),
       substitution_data: Some(to_value(data).unwrap()),
     };
-
+    let string_value = "{\"address\":{\"email\":\"test@test.com\",\"name\":\"Name\"},\"substitution_data\":{\"name\":\"Name\"}}".to_owned();
+    assert_eq!(string_value, to_value(&recipient).unwrap().to_string());
     assert_eq!(recipient, create_recipient());
   }
 

@@ -1,4 +1,6 @@
-use serde_json::Value;
+use chrono::prelude::*;
+use serde::ser::Serialize;
+use serde_json::{to_value, Value};
 
 use super::recipients::*;
 
@@ -16,7 +18,7 @@ use super::recipients::*;
 ///        .html("<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>")
 ///        .text("Here is your plain text, {{first_name or 'you great person'}}!");
 /// ```
-/// deserialize to json structure to be sent over http
+/// deserialized json looks similar to this
 /// ```json
 /// {
 ///  "campaign_id": "postman_inline_both_example",
@@ -46,7 +48,7 @@ pub struct Message {
     pub metadata: Option<Value>,
     pub substitution_data: Option<Value>,
     pub recipients: Recipients,
-    pub content: Content,
+    pub(crate) content: Content,
 }
 
 impl Message {
@@ -91,28 +93,46 @@ impl Message {
         self
     }
 
-    pub fn get_recipients(&self) -> &Recipients {
-        &self.recipients
-    }
-
+    /// set message subject
     pub fn subject(&mut self, subject: &str) -> &mut Self {
         self.content.subject = subject.to_owned();
         self
     }
+    /// set message options
     pub fn options(&mut self, options: Options) -> &mut Self {
         self.options = options;
         self
     }
+    /// set content html
     pub fn html(&mut self, html: &str) -> &mut Self {
         self.content.html = Some(html.to_owned());
         self
     }
+    /// set content text
     pub fn text(&mut self, text: &str) -> &mut Self {
         self.content.text = Some(text.to_owned());
         self
     }
+    /// set campaign id
     pub fn campaign_id(&mut self, campaign_id: &str) -> &mut Self {
         self.campaign_id = Some(campaign_id.to_owned());
+        self
+    }
+    /// set template id for content
+    pub fn template_id(&mut self, template_id: &str) -> &mut Self {
+        self.content.template_id = Some(template_id.to_owned());
+        self
+    }
+
+    /// set substitution_data
+    pub fn substitution_data<T: Serialize>(&mut self, data: T) -> &mut Self {
+        self.substitution_data = Some(to_value(data).expect("Data cannot be searized"));
+        self
+    }
+
+    /// set metadata
+    pub fn metadata<T: Serialize>(&mut self, data: T) -> &mut Self {
+        self.metadata = Some(to_value(data).expect("Data cannot be searized"));
         self
     }
 
@@ -137,6 +157,10 @@ impl Message {
 
 /// Message options for a particular Message
 /// ```rust
+/// # extern crate chrono;
+/// # extern crate sparkpost;
+/// # fn main() {
+/// use chrono::prelude::*;
 /// use sparkpost::transmission::Options;
 ///
 /// let options = Options {
@@ -145,12 +169,13 @@ impl Message {
 ///            transactional: false,
 ///            sandbox: false,
 ///            inline_css: false,
+///            start_time: Some(Utc.ymd(2014, 7, 8).and_hms(9, 10, 11))
 ///        };
 /// // or
 /// let options2 = Options::default();
 ///
-/// assert_eq!(options, options2);
-/// ```
+/// # }
+///  ```
 #[derive(Debug, Serialize, PartialEq, Default)]
 pub struct Options {
     pub open_tracking: bool,
@@ -158,6 +183,7 @@ pub struct Options {
     pub transactional: bool,
     pub sandbox: bool,
     pub inline_css: bool,
+    pub start_time: Option<DateTime<Utc>>,
 }
 
 /// Attachment data
@@ -178,7 +204,7 @@ pub struct Attachment {
 
 /// Email contents
 #[derive(Debug, Serialize, Default)]
-pub struct Content {
+pub(crate) struct Content {
     pub from: EmailAddress,
     pub subject: String,
     pub tags: Option<Vec<String>>,
@@ -235,23 +261,22 @@ mod test {
                 transactional: true,
                 sandbox: true,
                 inline_css: false,
+                start_time: Some(Utc.ymd(2014, 7, 8).and_hms(9, 10, 11)),
             },
         );
         let json_value = to_value(email).unwrap();
-
+        // println!("{:?}", &json_value);
         assert_eq!(
             "test@test.com",
             json_value["content"]["from"]["email"].as_str().unwrap()
         );
-        assert_eq!(
-            "test@test.com",
-            json_value["content"]["from"]["email"].as_str().unwrap()
-        );
+        assert_eq!("test@test.com", json_value["content"]["from"]["email"]);
         assert!(json_value["options"]["sandbox"].as_bool().unwrap());
         assert!(json_value["options"]["click_tracking"].as_bool().unwrap());
         assert!(json_value["options"]["open_tracking"].as_bool().unwrap());
         assert!(json_value["options"]["transactional"].as_bool().unwrap());
         assert!(!json_value["options"]["inline_css"].as_bool().unwrap());
+        assert_eq!("2014-07-08T09:10:11Z", json_value["options"]["start_time"]);
     }
 
     #[test]
@@ -283,7 +308,7 @@ mod test {
         message.add_recipient(recipient);
 
         // println!("{:#?}", &message);
-        match message.get_recipients() {
+        match message.recipients {
             Recipients::LocalList(ref list) => {
                 assert_eq!(list.get(0), Some(&recipient1));
             }
@@ -300,7 +325,7 @@ mod test {
             ),
         });
 
-        match message.get_recipients() {
+        match message.recipients {
             Recipients::LocalList(ref list) => {
                 assert_eq!(list.len(), 1);
             }
