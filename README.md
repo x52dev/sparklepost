@@ -9,8 +9,8 @@
 
 Currently only supports transmission api for sending emails.
 
-Please open an issue on [gitlab](https://gitlab.com/mygnu/spark_post/issues) if you need support or additional features.
-You may want to refer to the official docs here [https://developers.sparkpost.com/api/](https://developers.sparkpost.com/api/)
+Please open an issue on [gitlab repo](https://gitlab.com/mygnu/spark_post/issues) if you need support or additional features.
+You may want to refer to the official sparkpost api docs here [https://developers.sparkpost.com/api/](https://developers.sparkpost.com/api/)
 
 ### Example
 
