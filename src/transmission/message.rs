@@ -124,14 +124,14 @@ impl Message {
         self
     }
 
-    /// set substitution_data
-    pub fn substitution_data<T: Serialize>(&mut self, data: T) -> &mut Self {
+    /// set substitution_dat
+    pub fn substitution_data(&mut self, data: impl Serialize) -> &mut Self {
         self.substitution_data = Some(to_value(data).expect("Data cannot be searized"));
         self
     }
 
     /// set metadata
-    pub fn metadata<T: Serialize>(&mut self, data: T) -> &mut Self {
+    pub fn metadata(&mut self, data: impl Serialize) -> &mut Self {
         self.metadata = Some(to_value(data).expect("Data cannot be searized"));
         self
     }
@@ -320,8 +320,7 @@ mod test {
             substitution_data: Some(
                 to_value(Substitute {
                     any_field: "any_value".into(),
-                })
-                .unwrap(),
+                }).unwrap(),
             ),
         });
 
