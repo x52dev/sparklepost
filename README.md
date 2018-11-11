@@ -6,6 +6,7 @@
 [![Documentation](https://docs.rs/sparkpost/badge.svg)](https://docs.rs/sparkpost)
 ![License](https://img.shields.io/crates/l/sparkpost.svg)
 [![pipeline status](https://gitlab.com/mygnu/spark_post/badges/master/pipeline.svg)](https://gitlab.com/mygnu/spark_post/commits/master)
+[![Rustc Version](https://img.shields.io/badge/rustc-1.26+-green.svg)](https://blog.rust-lang.org/2018/05/10/Rust-1.26.html)
 
 Currently only supports transmission api for sending emails.
 
