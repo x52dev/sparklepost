@@ -6,14 +6,14 @@
 //!
 //! use sparkpost::transmission::{Transmission, Message, EmailAddress, TransmissionResponse};
 //!
-//! let tm = Transmission::new("api_key".to_string());
+//! let tm = Transmission::new("api_key");
 //! // to create for EU version use
-//! let tm = Transmission::new_eu("api_key".to_string());
+//! let tm = Transmission::new_eu("api_key");
 //! let mut email: Message = Message::new(
 //!                              EmailAddress::new("marketing@company.com", "Example Company")
 //!                          );
 //!
-//! email.add_recipient("name@domain.com".into())
+//! email.add_recipient("name@domain.com")
 //!      .subject("My Awesome email 😎")
 //!      .html("<h1>html body of the email</h1>")
 //!      .text("text body of the email");
@@ -45,6 +45,7 @@ use reqwest::{
     Client, Error,
 };
 use std::collections::HashMap;
+
 mod message;
 mod recipients;
 
@@ -98,18 +99,18 @@ pub struct Transmission {
 
 impl Transmission {
     /// creates new Transmission with api key for global version
-    pub fn new(api_key: String) -> Self {
+    pub fn new<T: Into<String>>(api_key: T) -> Self {
         Transmission {
-            api_key,
+            api_key: api_key.into(),
             url: "https://api.sparkpost.com/api/v1/transmissions".to_owned(),
             client: Client::new(),
         }
     }
 
     /// creates new Transmission with api key for EU version
-    pub fn new_eu(api_key: String) -> Self {
+    pub fn new_eu<T: Into<String>>(api_key: T) -> Self {
         Transmission {
-            api_key,
+            api_key: api_key.into(),
             url: "https://api.eu.sparkpost.com/api/v1/transmissions".to_owned(),
             client: Client::new(),
         }
@@ -140,7 +141,7 @@ impl Transmission {
     /// ```rust
     /// use sparkpost::transmission::Transmission;
     /// use std::collections::HashMap;
-    /// let tm = Transmission::new("api_key".into());
+    /// let tm = Transmission::new("api_key");
     ///
     /// let mut headers = HashMap::new();
     /// headers.insert("campaign_id", "your_campaingn_id");
@@ -198,7 +199,7 @@ mod tests {
         let mut email: Message =
             Message::new(EmailAddress::new("hello@email.letsorganise.app", "noreply"));
         email
-            .add_recipient("test@hgill.io".into())
+            .add_recipient("test@hgill.io")
             .subject("Testing builder email sandbox")
             .html("This is the html body of the email")
             .text("This is the text body of the email");
@@ -224,11 +225,10 @@ mod tests {
             }
         }
         // attach file to email
-        email.add_attachment(Attachment {
-            file_type: "image/png".into(),
-            name: "AnImage.png".into(),
-            data: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAXxJREFUOBFjvJVg84P5718WBjLAX2bmPyxMf/+xMDH8YyZDPwPDXwYGJkIaOXTNGdiUtHAqI2jA/18/GUQzGsg3gMfKg4FVQo6BiYcPqyF4XcChaczA4+DP8P//f4b/P3+SZgAzvxCDSGYjAyMjI8PvZw+AoYXdLuyiQLtE0uoZWAREwLb+fnKXQTipkngXcJu7MnACQx8G2FX1GHgs3bDGBlYX8HlFM/z9+JbhzewWhmf1CQyfti9j+PfzBwO/ZxTMTDiNmQKBfmZX1GB42V/K8P38YbDCX/dvMDAwMzPwuYbBNcIYmC4AhfjvXwx/376AqQHTf96+ZPj34xuKGIiDaQBQ8PPBTQwCoZkMjJzcYA3MgqIMAr7xDJ/3rAHzkQnGO7FWf5gZ/qLmBSZmBoHgNAZee1+Gf18/MzCyczJ83LyQ4fPetch6Gf4xMP3FbgBMGdAgJqAr/n37zABMTTBROA0ygAWUJUG5Civ4B8xwX78CpbD6FJiHmf4AAFicbTMTr5jAAAAAAElFTkSuQmCC".into(),
-        }).subject("Email with attachment");
+        email.add_attachment(Attachment::from_data(
+            "AnImage.png",
+            "image/png",
+            "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAXxJREFUOBFjvJVg84P5718WBjLAX2bmPyxMf/+xMDH8YyZDPwPDXwYGJkIaOXTNGdiUtHAqI2jA/18/GUQzGsg3gMfKg4FVQo6BiYcPqyF4XcChaczA4+DP8P//f4b/P3+SZgAzvxCDSGYjAyMjI8PvZw+AoYXdLuyiQLtE0uoZWAREwLb+fnKXQTipkngXcJu7MnACQx8G2FX1GHgs3bDGBlYX8HlFM/z9+JbhzewWhmf1CQyfti9j+PfzBwO/ZxTMTDiNmQKBfmZX1GB42V/K8P38YbDCX/dvMDAwMzPwuYbBNcIYmC4AhfjvXwx/376AqQHTf96+ZPj34xuKGIiDaQBQ8PPBTQwCoZkMjJzcYA3MgqIMAr7xDJ/3rAHzkQnGO7FWf5gZ/qLmBSZmBoHgNAZee1+Gf18/MzCyczJ83LyQ4fPetch6Gf4xMP3FbgBMGdAgJqAr/n37zABMTTBROA0ygAWUJUG5Civ4B8xwX78CpbD6FJiHmf4AAFicbTMTr5jAAAAAAElFTkSuQmCC")).subject("Email with attachment");
 
         let result = tm.send(&email);
         //        println!("{:#?}", result);

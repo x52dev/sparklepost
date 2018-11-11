@@ -1,3 +1,16 @@
+## 0.5.0
+### Breaking Changes
+Ergonomic API, In most places you can now provide a `String` or `str`. 
+ ```rust
+ // email.add_recipient("wilma@example.sink.sparkpostmail.com".into())
+ // becomes
+ email.add_recipient("wilma@example.sink.sparkpostmail.com");
+ let body :String = String::form("..."); 
+ email.html(&body) // gets copied internally
+ email.html(body) // body moves ownership, no allocation
+ ```
+`Attachment` struct can only be created by `Attachment::from_data(...)`.
+ Attachment can be passed as `&Attachment` or by moving to the massage. 
 ## 0.4.1
 
 ### No Breaking changes

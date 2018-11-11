@@ -8,11 +8,10 @@ use super::recipients::*;
 /// ### Example
 /// ```rust
 ///
-///
 /// use sparkpost::transmission::{Message, EmailAddress};
 ///
 /// let mut email = Message::new(EmailAddress::new("marketing@example.sink.sparkpostmail.com", "Example Company"));
-/// email.add_recipient("wilma@example.sink.sparkpostmail.com".into())
+/// email.add_recipient("wilma@example.sink.sparkpostmail.com")
 ///        .campaign_id("postman_inline_both_example")
 ///        .subject("SparkPost inline template example")
 ///        .html("<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>")
@@ -53,9 +52,9 @@ pub struct Message {
 
 impl Message {
     /// create new message with sender emailAddress
-    pub fn new(sender_address: EmailAddress) -> Self {
+    pub fn new<T: Into<EmailAddress>>(sender_address: T) -> Self {
         let mut message = Message::default();
-        message.content.from = sender_address;
+        message.content.from = sender_address.into();
         message
     }
 
@@ -79,7 +78,8 @@ impl Message {
     /// add an address to recipient list
     ///
     /// Recipient is replaced if they have same email address
-    pub fn add_recipient(&mut self, recipient: Recipient) -> &mut Self {
+    pub fn add_recipient<T: Into<Recipient>>(&mut self, recipient: T) -> &mut Self {
+        let recipient: Recipient = recipient.into();
         match self.recipients {
             Recipients::ListName(_) => self.recipients = Recipients::LocalList(vec![recipient]),
             Recipients::LocalList(ref mut list) => {
@@ -94,63 +94,62 @@ impl Message {
     }
 
     /// set message subject
-    pub fn subject(&mut self, subject: &str) -> &mut Self {
-        self.content.subject = subject.to_owned();
+    pub fn subject<T: Into<String>>(&mut self, subject: T) -> &mut Self {
+        self.content.subject = subject.into();
         self
     }
     /// set message options
-    pub fn options(&mut self, options: Options) -> &mut Self {
-        self.options = options;
+    pub fn options<T: Into<Options>>(&mut self, options: T) -> &mut Self {
+        self.options = options.into();
         self
     }
     /// set content html
-    pub fn html(&mut self, html: &str) -> &mut Self {
-        self.content.html = Some(html.to_owned());
+    pub fn html<T: Into<String>>(&mut self, html: T) -> &mut Self {
+        self.content.html = Some(html.into());
         self
     }
     /// set content text
-    pub fn text(&mut self, text: &str) -> &mut Self {
-        self.content.text = Some(text.to_owned());
+    pub fn text<T: Into<String>>(&mut self, text: T) -> &mut Self {
+        self.content.text = Some(text.into());
         self
     }
     /// set campaign id
-    pub fn campaign_id(&mut self, campaign_id: &str) -> &mut Self {
-        self.campaign_id = Some(campaign_id.to_owned());
+    pub fn campaign_id<T: Into<String>>(&mut self, campaign_id: T) -> &mut Self {
+        self.campaign_id = Some(campaign_id.into());
         self
     }
     /// set template id for content
-    pub fn template_id(&mut self, template_id: &str) -> &mut Self {
-        self.content.template_id = Some(template_id.to_owned());
+    pub fn template_id<T: Into<String>>(&mut self, template_id: T) -> &mut Self {
+        self.content.template_id = Some(template_id.into());
         self
     }
 
     /// set substitution_dat
-    pub fn substitution_data(&mut self, data: impl Serialize) -> &mut Self {
+    pub fn substitution_data<T: Serialize>(&mut self, data: T) -> &mut Self {
         self.substitution_data = Some(to_value(data).expect("Data cannot be searized"));
         self
     }
 
     /// set metadata
-    pub fn metadata(&mut self, data: impl Serialize) -> &mut Self {
+    pub fn metadata<T: Serialize>(&mut self, data: T) -> &mut Self {
         self.metadata = Some(to_value(data).expect("Data cannot be searized"));
         self
     }
 
     /// adds attachment to Message, multiple attachments allowed
-    ///
     /// ``` rust
     /// use sparkpost::transmission::{Message, Attachment};
     ///
-    /// let mut email = Message::new("marketing@example.sink.sparkpostmail.com".into());
-    /// email.add_recipient("wilma@example.sink.sparkpostmail.com".into())
-    ///     .add_attachment(Attachment {
-    ///        file_type: "image/png".into(),
-    ///        name: "AnImage.png".into(),
-    ///        data: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAXxJREFUOBFjvJVg84P5718WBjLAX2bmPyxMf/+xMDH8YyZDPwPDXwYGJkIaOXTNGdiUtHAqI2jA/18/GUQzGsg3gMfKg4FVQo6BiYcPqyF4XcChaczA4+DP8P//f4b/P3+SZgAzvxCDSGYjAyMjI8PvZw+AoYXdLuyiQLtE0uoZWAREwLb+fnKXQTipkngXcJu7MnACQx8G2FX1GHgs3bDGBlYX8HlFM/z9+JbhzewWhmf1CQyfti9j+PfzBwO/ZxTMTDiNmQKBfmZX1GB42V/K8P38YbDCX/dvMDAwMzPwuYbBNcIYmC4AhfjvXwx/376AqQHTf96+ZPj34xuKGIiDaQBQ8PPBTQwCoZkMjJzcYA3MgqIMAr7xDJ/3rAHzkQnGO7FWf5gZ/qLmBSZmBoHgNAZee1+Gf18/MzCyczJ83LyQ4fPetch6Gf4xMP3FbgBMGdAgJqAr/n37zABMTTBROA0ygAWUJUG5Civ4B8xwX78CpbD6FJiHmf4AAFicbTMTr5jAAAAAAElFTkSuQmCC".into(),
-    ///    });
+    /// let mut email = Message::new("marketing@example.sink.sparkpostmail.com");
+    /// let attachment = Attachment::from_data(
+    ///        "image.png",
+    ///        "image/png", "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAXxJREFUOBFjvJVg84P5718WBjLAX2bmPyxMf/+xMDH8YyZDPwPDXwYGJkIaOXTNGdiUtHAqI2jA/18/GUQzGsg3gMfKg4FVQo6BiYcPqyF4XcChaczA4+DP8P//f4b/P3+SZgAzvxCDSGYjAyMjI8PvZw+AoYXdLuyiQLtE0uoZWAREwLb+fnKXQTipkngXcJu7MnACQx8G2FX1GHgs3bDGBlYX8HlFM/z9+JbhzewWhmf1CQyfti9j+PfzBwO/ZxTMTDiNmQKBfmZX1GB42V/K8P38YbDCX/dvMDAwMzPwuYbBNcIYmC4AhfjvXwx/376AqQHTf96+ZPj34xuKGIiDaQBQ8PPBTQwCoZkMjJzcYA3MgqIMAr7xDJ/3rAHzkQnGO7FWf5gZ/qLmBSZmBoHgNAZee1+Gf18/MzCyczJ83LyQ4fPetch6Gf4xMP3FbgBMGdAgJqAr/n37zABMTTBROA0ygAWUJUG5Civ4B8xwX78CpbD6FJiHmf4AAFicbTMTr5jAAAAAAElFTkSuQmCC");
+    ///
+    /// email.add_recipient("wilma@example.sink.sparkpostmail.com")
+    ///     .add_attachment(attachment);
     /// ```
-    pub fn add_attachment(&mut self, attachment: Attachment) -> &mut Self {
-        self.content.attachments.push(attachment);
+    pub fn add_attachment<T: Into<Attachment>>(&mut self, attachment: T) -> &mut Self {
+        self.content.attachments.push(attachment.into());
         self
     }
 }
@@ -191,15 +190,35 @@ pub struct Options {
 pub struct Attachment {
     /// Name of the file
     /// i.e. 'file_name.png'
-    pub name: String,
+    name: String,
 
     /// File mime type
     /// i.e. 'image/png'
     #[serde(rename = "type")]
-    pub file_type: String,
+    file_type: String,
 
     /// base64 encoded data
-    pub data: String,
+    data: String,
+}
+
+impl<'a> From<&'a Attachment> for Attachment {
+    fn from(attachment: &'a Attachment) -> Self {
+        Attachment {
+            name: attachment.name.to_owned(),
+            file_type: attachment.file_type.to_owned(),
+            data: attachment.data.to_owned(),
+        }
+    }
+}
+
+impl Attachment {
+    pub fn from_data<T: Into<String>>(name: T, file_type: T, data: T) -> Self {
+        Attachment {
+            name: name.into(),
+            file_type: file_type.into(),
+            data: data.into(),
+        }
+    }
 }
 
 /// Email contents
@@ -227,7 +246,7 @@ mod test {
     #[test]
     fn create_message() {
         let mut email: Message = Message::new(EmailAddress::new("test@test.com", "name"));
-        email.add_recipient("tech@hgill.io".into());
+        email.add_recipient("tech@hgill.io");
         email.recipient_list("my_list");
 
         let json_value: Value = to_value(&email).unwrap();
@@ -248,7 +267,7 @@ mod test {
         assert!(!json_value["options"]["click_tracking"].as_bool().unwrap());
         assert!(!json_value["options"]["open_tracking"].as_bool().unwrap());
         assert!(!json_value["options"]["transactional"].as_bool().unwrap());
-        // println!("{:#?}", json_value);
+// println!("{:#?}", json_value);
     }
 
     #[test]
@@ -265,7 +284,7 @@ mod test {
             },
         );
         let json_value = to_value(email).unwrap();
-        // println!("{:?}", &json_value);
+// println!("{:?}", &json_value);
         assert_eq!(
             "test@test.com",
             json_value["content"]["from"]["email"].as_str().unwrap()
@@ -292,7 +311,7 @@ mod test {
             substitution_data: Some(to_value(data).unwrap()),
         });
         let json_value = to_value(email).unwrap();
-        // println!("{:#?}", &json_value);
+// println!("{:#?}", &json_value);
 
         assert_eq!(
             json_value["recipients"][0]["address"]["email"],
@@ -303,11 +322,11 @@ mod test {
     #[test]
     fn test_message_recipient_duplication() {
         let mut message = Message::default();
-        let recipient = "email@domain.com".into();
-        let recipient1 = "email@domain.com".into();
+        let recipient: Recipient = "email@domain.com".into();
+        let recipient1: Recipient = "email@domain.com".into();
         message.add_recipient(recipient);
 
-        // println!("{:#?}", &message);
+// println!("{:#?}", &message);
         match message.recipients {
             Recipients::LocalList(ref list) => {
                 assert_eq!(list.get(0), Some(&recipient1));
@@ -332,7 +351,7 @@ mod test {
         };
 
         let json_value = to_value(&message).unwrap();
-        // println!("{:#?}", &json_value);
+// println!("{:#?}", &json_value);
 
         assert_eq!(
             json_value["recipients"][0]["substitution_data"]["any_field"],
@@ -342,7 +361,7 @@ mod test {
         message.recipient_list("mylist");
 
         let json_value = to_value(&message).unwrap();
-        // println!("{:#?}", &json_value);
+// println!("{:#?}", &json_value);
 
         assert_eq!(json_value["recipients"]["list_id"], "mylist");
     }
