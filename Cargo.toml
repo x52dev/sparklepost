@@ -1,6 +1,6 @@
 [package]
 name = "sparkpost"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["mygnu <tech@hgill.io>"]
 keywords = ["email", "sparkpost","reqwest"]
 description = "Rust bindings for sparkpost email api v1"

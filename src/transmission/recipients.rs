@@ -114,7 +114,7 @@ pub struct EmailAddress {
 
 impl EmailAddress {
     /// create new email address with email and name
-    pub fn new<T: Into<String>>(email: T, name: T) -> Self {
+    pub fn new<E: Into<String>, N: Into<String>>(email: E, name: N) -> Self {
         EmailAddress {
             email: email.into(),
             name: Some(name.into()),
@@ -161,6 +161,17 @@ mod test {
         }
     }
 
+    #[test]
+    fn address_with_new() {
+        let address = EmailAddress::new("test@test.com", "Name".to_string());
+        assert_eq!(address, create_address());
+
+        let address = EmailAddress::new("test@test.com".to_string(), "Name");
+        assert_eq!(address, create_address());
+
+        let address = EmailAddress::new("test@test.com", "Name");
+        assert_eq!(address, create_address());
+    }
     #[test]
     fn address() {
         let address = EmailAddress::from("test@test.com".to_string());
