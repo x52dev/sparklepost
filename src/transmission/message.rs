@@ -267,7 +267,7 @@ mod test {
         assert!(!json_value["options"]["click_tracking"].as_bool().unwrap());
         assert!(!json_value["options"]["open_tracking"].as_bool().unwrap());
         assert!(!json_value["options"]["transactional"].as_bool().unwrap());
-// println!("{:#?}", json_value);
+        // println!("{:#?}", json_value);
     }
 
     #[test]
@@ -284,7 +284,7 @@ mod test {
             },
         );
         let json_value = to_value(email).unwrap();
-// println!("{:?}", &json_value);
+        // println!("{:?}", &json_value);
         assert_eq!(
             "test@test.com",
             json_value["content"]["from"]["email"].as_str().unwrap()
@@ -311,7 +311,7 @@ mod test {
             substitution_data: Some(to_value(data).unwrap()),
         });
         let json_value = to_value(email).unwrap();
-// println!("{:#?}", &json_value);
+        // println!("{:#?}", &json_value);
 
         assert_eq!(
             json_value["recipients"][0]["address"]["email"],
@@ -326,7 +326,7 @@ mod test {
         let recipient1: Recipient = "email@domain.com".into();
         message.add_recipient(recipient);
 
-// println!("{:#?}", &message);
+        // println!("{:#?}", &message);
         match message.recipients {
             Recipients::LocalList(ref list) => {
                 assert_eq!(list.get(0), Some(&recipient1));
@@ -351,7 +351,7 @@ mod test {
         };
 
         let json_value = to_value(&message).unwrap();
-// println!("{:#?}", &json_value);
+        // println!("{:#?}", &json_value);
 
         assert_eq!(
             json_value["recipients"][0]["substitution_data"]["any_field"],
@@ -361,7 +361,7 @@ mod test {
         message.recipient_list("mylist");
 
         let json_value = to_value(&message).unwrap();
-// println!("{:#?}", &json_value);
+        // println!("{:#?}", &json_value);
 
         assert_eq!(json_value["recipients"]["list_id"], "mylist");
     }
