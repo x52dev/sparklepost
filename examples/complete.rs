@@ -7,7 +7,8 @@ extern crate sparkpost;
 
 use chrono::prelude::*;
 use sparkpost::transmission::{
-    Attachment, EmailAddress, Message, Options, Recipient, Transmission, TransmissionResponse,
+    Attachment, EmailAddress, Message, Options, Recipient, Transmission,
+    TransmissionResponse,
 };
 
 #[derive(Debug, Serialize)]

@@ -47,10 +47,10 @@ use reqwest::{
 use std::collections::HashMap;
 
 mod message;
-mod recipients;
+mod models;
 
 pub use self::message::*;
-pub use self::recipients::*;
+pub use self::models::*;
 
 /// Reqwest Error
 pub type ReqError = Error;
@@ -116,7 +116,10 @@ impl Transmission {
         }
     }
     /// Send api request
-    pub fn send(&self, message: &Message) -> Result<TransmissionResponse, ReqError> {
+    pub fn send(
+        &self,
+        message: &Message,
+    ) -> Result<TransmissionResponse, ReqError> {
         self.client
             .post(&self.url)
             .headers(self.construct_headers(None))
@@ -125,7 +128,10 @@ impl Transmission {
             .json()
     }
     /// Retrieve a Scheduled Transmission from API
-    pub fn scheduled_by_id(&self, transmission_id: &str) -> Result<TransmissionResponse, ReqError> {
+    pub fn scheduled_by_id(
+        &self,
+        transmission_id: &str,
+    ) -> Result<TransmissionResponse, ReqError> {
         // let url = format!("{}/{}", self.url, transmission_id);
         let url = self.url.clone() + "/" + transmission_id;
         self.client
@@ -165,11 +171,18 @@ impl Transmission {
             .json()
     }
 
-    fn construct_headers(&self, header_map: Option<&HashMap<&'static str, &str>>) -> HeaderMap {
+    fn construct_headers(
+        &self,
+        header_map: Option<&HashMap<&'static str, &str>>,
+    ) -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
-        headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-        headers.insert(AUTHORIZATION, HeaderValue::from_str(&self.api_key).unwrap());
+        headers
+            .insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_str(&self.api_key).unwrap(),
+        );
 
         if let Some(header_map) = header_map {
             for (name, value) in header_map {
@@ -196,8 +209,10 @@ mod tests {
     #[test]
     fn send_email() {
         let tm = Transmission::new_eu(get_api_key());
-        let mut email: Message =
-            Message::new(EmailAddress::new("hello@email.letsorganise.app", "noreply"));
+        let mut email: Message = Message::new(EmailAddress::new(
+            "hello@email.letsorganise.app",
+            "noreply",
+        ));
         email
             .add_recipient("test@hgill.io")
             .subject("Testing builder email sandbox")

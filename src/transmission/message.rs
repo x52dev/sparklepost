@@ -2,7 +2,7 @@ use chrono::prelude::*;
 use serde::ser::Serialize;
 use serde_json::{to_value, Value};
 
-use super::recipients::*;
+use super::models::*;
 
 /// Represents email message including some mata-data
 /// ### Example
@@ -59,7 +59,10 @@ impl Message {
     }
 
     /// create new message with sending options
-    pub fn with_options(sender_address: EmailAddress, options: Options) -> Self {
+    pub fn with_options(
+        sender_address: EmailAddress,
+        options: Options,
+    ) -> Self {
         let mut message = Message::default();
         message.options = options;
         message.content.from = sender_address;
@@ -78,13 +81,19 @@ impl Message {
     /// add an address to recipient list
     ///
     /// Recipient is replaced if they have same email address
-    pub fn add_recipient<T: Into<Recipient>>(&mut self, recipient: T) -> &mut Self {
+    pub fn add_recipient<T: Into<Recipient>>(
+        &mut self,
+        recipient: T,
+    ) -> &mut Self {
         let recipient: Recipient = recipient.into();
         match self.recipients {
-            Recipients::ListName(_) => self.recipients = Recipients::LocalList(vec![recipient]),
+            Recipients::ListName(_) => {
+                self.recipients = Recipients::LocalList(vec![recipient])
+            }
             Recipients::LocalList(ref mut list) => {
                 list.retain(|ref rec| {
-                    rec.address.email.as_str() != recipient.address.email.as_str()
+                    rec.address.email.as_str()
+                        != recipient.address.email.as_str()
                 });
                 list.push(recipient);
             }
@@ -114,19 +123,26 @@ impl Message {
         self
     }
     /// set campaign id
-    pub fn campaign_id<T: Into<String>>(&mut self, campaign_id: T) -> &mut Self {
+    pub fn campaign_id<T: Into<String>>(
+        &mut self,
+        campaign_id: T,
+    ) -> &mut Self {
         self.campaign_id = Some(campaign_id.into());
         self
     }
     /// set template id for content
-    pub fn template_id<T: Into<String>>(&mut self, template_id: T) -> &mut Self {
+    pub fn template_id<T: Into<String>>(
+        &mut self,
+        template_id: T,
+    ) -> &mut Self {
         self.content.template_id = Some(template_id.into());
         self
     }
 
     /// set substitution_dat
     pub fn substitution_data<T: Serialize>(&mut self, data: T) -> &mut Self {
-        self.substitution_data = Some(to_value(data).expect("Data cannot be searized"));
+        self.substitution_data =
+            Some(to_value(data).expect("Data cannot be searized"));
         self
     }
 
@@ -148,7 +164,10 @@ impl Message {
     /// email.add_recipient("wilma@example.sink.sparkpostmail.com")
     ///     .add_attachment(attachment);
     /// ```
-    pub fn add_attachment<T: Into<Attachment>>(&mut self, attachment: T) -> &mut Self {
+    pub fn add_attachment<T: Into<Attachment>>(
+        &mut self,
+        attachment: T,
+    ) -> &mut Self {
         self.content.attachments.push(attachment.into());
         self
     }
@@ -245,7 +264,8 @@ mod test {
 
     #[test]
     fn create_message() {
-        let mut email: Message = Message::new(EmailAddress::new("test@test.com", "name"));
+        let mut email: Message =
+            Message::new(EmailAddress::new("test@test.com", "name"));
         email.add_recipient("tech@hgill.io");
         email.recipient_list("my_list");
 
@@ -339,7 +359,8 @@ mod test {
             substitution_data: Some(
                 to_value(Substitute {
                     any_field: "any_value".into(),
-                }).unwrap(),
+                })
+                .unwrap(),
             ),
         });
 

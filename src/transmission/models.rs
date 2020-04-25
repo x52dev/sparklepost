@@ -22,23 +22,22 @@ pub struct Recipient {
 
 impl Recipient {
     /// create recipient with substitute data for any type that implements Serialize from serde
-    pub fn with_substitution<T: Serialize>(address: EmailAddress, data: T) -> Self {
+    pub fn with_substitution<T: Serialize>(
+        address: EmailAddress,
+        data: T,
+    ) -> Self {
         Recipient {
             address,
-            substitution_data: Some(to_value(data).expect("unable to serialize data")),
+            substitution_data: Some(
+                to_value(data).expect("unable to serialize data"),
+            ),
         }
     }
 }
 
 impl<'a> From<&'a str> for Recipient {
     fn from(email: &'a str) -> Self {
-        Recipient {
-            address: EmailAddress {
-                email: email.to_owned(),
-                name: None,
-            },
-            substitution_data: None,
-        }
+        email.to_owned().into()
     }
 }
 
