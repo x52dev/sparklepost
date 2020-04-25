@@ -41,8 +41,9 @@
 //! ```
 
 use reqwest::{
+    blocking::Client,
     header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE},
-    Client, Error,
+    Error,
 };
 use std::collections::HashMap;
 
