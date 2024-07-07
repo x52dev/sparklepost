@@ -60,31 +60,31 @@ impl From<EmailAddress> for Recipient {
 }
 
 #[derive(Debug)]
-pub enum Recipients {
+pub enum RecipientSet {
     LocalList(Vec<Recipient>),
     ListName(String),
 }
 
-impl Default for Recipients {
-    fn default() -> Recipients {
-        Recipients::LocalList(Vec::new())
+impl Default for RecipientSet {
+    fn default() -> RecipientSet {
+        RecipientSet::LocalList(Vec::new())
     }
 }
 
-impl Serialize for Recipients {
+impl Serialize for RecipientSet {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         match self {
-            Recipients::LocalList(ref list) => {
+            RecipientSet::LocalList(ref list) => {
                 let mut seq = serializer.serialize_seq(Some(list.len()))?;
                 for element in list {
                     seq.serialize_element(element)?;
                 }
                 seq.end()
             }
-            Recipients::ListName(ref list_name) => {
+            RecipientSet::ListName(ref list_name) => {
                 let mut s = serializer.serialize_struct("listname", 1)?;
                 s.serialize_field("list_id", list_name)?;
                 s.end()

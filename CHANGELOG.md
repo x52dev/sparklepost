@@ -1,6 +1,12 @@
+# Changelog
+
+## 0.5.5
+
+- Forked from `sparkpost` crate.
+
 ## 0.5.1
 
-### `Email::new()' now can take`String`and`&str`
+### `Email::new()` now can take `String` and `&str`
 
 ## 0.5.0
 

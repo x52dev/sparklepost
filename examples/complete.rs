@@ -1,12 +1,6 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate chrono;
-extern crate dotenv;
-extern crate serde;
-extern crate sparkpost;
-
-use chrono::prelude::*;
-use sparkpost::transmission::{
+use chrono::{TimeZone as _, Utc};
+use serde::Serialize;
+use sparklepost::transmission::{
     Attachment, EmailAddress, Message, Options, Recipient, Transmission,
     TransmissionResponse,
 };
@@ -16,16 +10,17 @@ struct Data {
     name: String,
 }
 
-#[allow(unused)]
 fn get_api_key() -> String {
-    use dotenv::dotenv;
+    use dotenvy::dotenv;
     use std::env;
     dotenv().ok();
     env::var("SPARKPOST_API_KEY").expect("SPARKPOST_API_KEY must be set")
 }
 
 fn main() {
-    let tm = Transmission::new_eu("get_api_key()".to_owned());
+    get_api_key();
+
+    let tm = Transmission::new_eu(get_api_key());
 
     // new email message with sender name and email
     let mut email = Message::new(EmailAddress::new(
@@ -39,7 +34,7 @@ fn main() {
         transactional: false,
         sandbox: false,
         inline_css: false,
-        start_time: Some(Utc.ymd(2019, 1, 1).and_hms(0, 0, 0)),
+        start_time: Some(Utc.with_ymd_and_hms(2019, 1, 1, 0, 0, 0).unwrap()),
     };
 
     // recipient with substitute data for the template

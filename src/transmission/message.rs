@@ -1,52 +1,60 @@
-use chrono::prelude::*;
-use serde::ser::Serialize;
+use chrono::{DateTime, Utc};
+use serde::Serialize;
 use serde_json::{to_value, Value};
 
-use super::models::*;
+use super::models::{EmailAddress, Recipient, RecipientSet};
 
 /// Represents email message including some mata-data
-/// ### Example
-/// ```rust
 ///
+/// # Examples
+///
+/// ```
 /// use sparkpost::transmission::{Message, EmailAddress};
 ///
-/// let mut email = Message::new(EmailAddress::new("marketing@example.sink.sparkpostmail.com", "Example Company"));
+/// let mut email = Message::new(
+///     EmailAddress::new("marketing@example.sink.sparkpostmail.com", "Example Company")
+/// );
+///
 /// email.add_recipient("wilma@example.sink.sparkpostmail.com")
 ///        .campaign_id("postman_inline_both_example")
 ///        .subject("SparkPost inline template example")
 ///        .html("<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>")
 ///        .text("Here is your plain text, {{first_name or 'you great person'}}!");
 /// ```
-/// deserialized json looks similar to this
+///
+/// Deserialized JSON looks similar to this:
+///
 /// ```json
 /// {
-///  "campaign_id": "postman_inline_both_example",
-///  "recipients": [
-///    {
-///      "address": {"email": "wilma@example.sink.sparkpostmail.com", "name": "Name"}
-///    }
-///  ],
-///  "content": {
-///    "from": {
-///      "email": "marketing@example.sink.sparkpostmail.com",
-///      "name": "Example Company"
-///    },
+///   "campaign_id": "postman_inline_both_example",
+///   "recipients": [
+///     {
+///       "address": {
+///         "email": "wilma@example.sink.sparkpostmail.com",
+///         "name": "Name"
+///       }
+///     }
+///   ],
+///   "content": {
+///     "from": {
+///       "email": "marketing@example.sink.sparkpostmail.com",
+///       "name": "Example Company"
+///     },
 ///
-///    "subject": "SparkPost inline template example",
-///    "html": "<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>",
-///    "text": "Here is your plain text, {{first_name or 'you great person'}}!"
-///  }
-///}
+///     "subject": "SparkPost inline template example",
+///     "html": "<html><body>Here is your inline html, {{first_name or 'you great person'}}!<br></body></html>",
+///     "text": "Here is your plain text, {{first_name or 'you great person'}}!"
+///   }
+/// }
 /// ```
-///
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct Message {
     pub options: Options,
     pub description: Option<String>,
     pub campaign_id: Option<String>,
     pub metadata: Option<Value>,
     pub substitution_data: Option<Value>,
-    pub recipients: Recipients,
+    pub recipients: RecipientSet,
     pub(crate) content: Content,
 }
 
@@ -63,8 +71,11 @@ impl Message {
         sender_address: EmailAddress,
         options: Options,
     ) -> Self {
-        let mut message = Message::default();
-        message.options = options;
+        let mut message = Message {
+            options,
+            ..Default::default()
+        };
+
         message.content.from = sender_address;
         message
     }
@@ -74,7 +85,7 @@ impl Message {
     ///
     /// see [Transport API ref](https://developers.sparkpost.com/api/transmissions/#header-stored-recipient-list)
     pub fn recipient_list(&mut self, list_name: &str) -> &mut Self {
-        self.recipients = Recipients::ListName(list_name.into());
+        self.recipients = RecipientSet::ListName(list_name.into());
         self
     }
 
@@ -87,11 +98,11 @@ impl Message {
     ) -> &mut Self {
         let recipient: Recipient = recipient.into();
         match self.recipients {
-            Recipients::ListName(_) => {
-                self.recipients = Recipients::LocalList(vec![recipient])
+            RecipientSet::ListName(_) => {
+                self.recipients = RecipientSet::LocalList(vec![recipient])
             }
-            Recipients::LocalList(ref mut list) => {
-                list.retain(|ref rec| {
+            RecipientSet::LocalList(ref mut list) => {
+                list.retain(|rec| {
                     rec.address.email.as_str()
                         != recipient.address.email.as_str()
                 });
@@ -255,6 +266,7 @@ pub(crate) struct Content {
 #[cfg(test)]
 mod test {
     use super::*;
+    use chrono::TimeZone as _;
     use serde_json::to_value;
 
     #[derive(Debug, Serialize)]
@@ -300,7 +312,9 @@ mod test {
                 transactional: true,
                 sandbox: true,
                 inline_css: false,
-                start_time: Some(Utc.ymd(2014, 7, 8).and_hms(9, 10, 11)),
+                start_time: Some(
+                    Utc.with_ymd_and_hms(2014, 7, 8, 9, 10, 11).unwrap(),
+                ),
             },
         );
         let json_value = to_value(email).unwrap();
@@ -348,10 +362,10 @@ mod test {
 
         // println!("{:#?}", &message);
         match message.recipients {
-            Recipients::LocalList(ref list) => {
-                assert_eq!(list.get(0), Some(&recipient1));
+            RecipientSet::LocalList(ref list) => {
+                assert_eq!(list.first(), Some(&recipient1));
             }
-            _ => assert!(false),
+            _ => unreachable!(),
         };
 
         message.add_recipient(Recipient {
@@ -365,10 +379,10 @@ mod test {
         });
 
         match message.recipients {
-            Recipients::LocalList(ref list) => {
+            RecipientSet::LocalList(ref list) => {
                 assert_eq!(list.len(), 1);
             }
-            _ => assert!(false),
+            _ => unreachable!(),
         };
 
         let json_value = to_value(&message).unwrap();
@@ -390,9 +404,9 @@ mod test {
     #[test]
     fn create_options() {
         let options = Options::default();
-        assert_eq!(false, options.click_tracking);
-        assert_eq!(false, options.open_tracking);
-        assert_eq!(false, options.sandbox);
-        assert_eq!(false, options.transactional);
+        assert!(!options.click_tracking);
+        assert!(!options.open_tracking);
+        assert!(!options.sandbox);
+        assert!(!options.transactional);
     }
 }

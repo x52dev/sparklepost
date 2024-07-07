@@ -1,17 +1,16 @@
-//! Module contains sprakpost email sending api
+//! Module contains Sparkpost email sending api
 //!
-//! ### Example
-//!  ```rust
-//!  extern crate sparkpost;
+//! # Examples
 //!
+//! ```
 //! use sparkpost::transmission::{Transmission, Message, EmailAddress, TransmissionResponse};
 //!
 //! let tm = Transmission::new("api_key");
 //! // to create for EU version use
 //! let tm = Transmission::new_eu("api_key");
-//! let mut email: Message = Message::new(
-//!                              EmailAddress::new("marketing@company.com", "Example Company")
-//!                          );
+//! let mut email = Message::new(
+//!     EmailAddress::new("marketing@company.com", "Example Company")
+//! );
 //!
 //! email.add_recipient("name@domain.com")
 //!      .subject("My Awesome email 😎")
@@ -37,7 +36,6 @@
 //!         println!("error \n {:#?}", error);
 //!     }
 //! }
-//!
 //! ```
 
 use reqwest::{
@@ -45,6 +43,7 @@ use reqwest::{
     header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     Error,
 };
+use serde::Deserialize;
 use std::collections::HashMap;
 
 mod message;
@@ -85,12 +84,15 @@ pub enum TransmissionResponse {
 }
 
 /// Sparkpost Transmission
-/// currently only supports sending email message
-/// ```rust
+///
+/// Currently only supports sending email message.
+///
+/// ```
 /// use sparkpost::transmission::Transmission;
 /// let tm = Transmission::new("api_key_form_env".to_string());
 /// ```
-/// for more info see [https://developers.sparkpost.com/api/transmissions/](https://developers.sparkpost.com/api/transmissions/)
+///
+/// For more info see <https://developers.sparkpost.com/api/transmissions>.
 #[derive(Debug)]
 pub struct Transmission {
     api_key: String,
@@ -133,10 +135,10 @@ impl Transmission {
         &self,
         transmission_id: &str,
     ) -> Result<TransmissionResponse, ReqError> {
-        // let url = format!("{}/{}", self.url, transmission_id);
-        let url = self.url.clone() + "/" + transmission_id;
+        let url = format!("{}/{transmission_id}", self.url);
+
         self.client
-            .get(&url)
+            .get(url)
             .headers(self.construct_headers(None))
             .send()?
             .json()
@@ -199,7 +201,7 @@ mod tests {
     use super::*;
 
     fn get_api_key() -> String {
-        use dotenv::dotenv;
+        use dotenvy::dotenv;
         use std::env;
         dotenv().ok();
         env::var("SPARKPOST_API_KEY").expect("SPARKPOST_API_KEY must be set")
