@@ -1,18 +1,23 @@
-# SPARKPOST
+# `sparklepost`
 
-## `rust` api for [sparkpost](https://sparkpost.com) email service [UNOFFICIAL]
+<!-- prettier-ignore-start -->
 
-[![Latest version](https://img.shields.io/crates/v/sparkpost.svg)](https://crates.io/crates/sparkpost)
-[![Documentation](https://docs.rs/sparkpost/badge.svg)](https://docs.rs/sparkpost)
-![License](https://img.shields.io/crates/l/sparkpost.svg)
-[![pipeline status](https://gitlab.com/mygnu/spark_post/badges/master/pipeline.svg)](https://gitlab.com/mygnu/spark_post/commits/master)
-[![Rustc Version](https://img.shields.io/badge/rustc-1.26+-green.svg)](https://blog.rust-lang.org/2018/05/10/Rust-1.26.html)
+[![Latest version](https://img.shields.io/crates/v/sparklepost.svg)](https://crates.io/crates/sparklepost)
+[![Documentation](https://docs.rs/sparklepost/badge.svg)](https://docs.rs/sparklepost)
+![License](https://img.shields.io/crates/l/sparklepost.svg)
+<!-- [![pipeline status](https://github.com/x52dev/sparklepost/badges/main/pipeline.svg)](https://github.com/x52dev/sparklepost/commits/main) -->
+![Version](https://img.shields.io/badge/rustc-1.64+-ab6000.svg)
 
-Currently only supports transmission api for sending emails.
+<!-- prettier-ignore-end -->
 
-Please open an issue on [gitlab repo](https://gitlab.com/mygnu/spark_post/issues) if you need support or additional features.
-You may want to refer to the official sparkpost api docs here [https://developers.sparkpost.com/api/](https://developers.sparkpost.com/api/)
+<!-- cargo-rdme start -->
+
+Bindings for [Sparkpost] email API v1.
+
+[Sparkpost]: https://sparkpost.com
+
+<!-- cargo-rdme end -->
 
 ### Example
 
-see [examples](https://gitlab.com/mygnu/spark_post/tree/master/examples) directory for a full example
+see [examples](https://gitlab.com/mygnu/spark_post/tree/main/examples) directory for a full example

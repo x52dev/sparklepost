@@ -1,8 +1,7 @@
-#![deny(rust_2018_idioms, future_incompatible, nonstandard_style)]
-#![deny(missing_debug_implementations)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-//! # sparkpost
+//! Bindings for [Sparkpost] email API v1.
 //!
-//! rust api for [sparkpost](https://sparkpost.com) email service
+//! [Sparkpost]: https://sparkpost.com
 
 pub mod transmission;
