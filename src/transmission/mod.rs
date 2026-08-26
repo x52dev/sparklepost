@@ -21,19 +21,19 @@
 //!
 //! match result {
 //!    Ok(res) => {
-//!         println!("{:?}", res);
+//!         println!("{res:?}");
 //!         match res {
 //!             TransmissionResponse::ApiResponse(api_res) => {
 //!              //   assert_eq!(1, api_res.total_accepted_recipients);
 //!              //   assert_eq!(0, api_res.total_rejected_recipients);
 //!             }
 //!             TransmissionResponse::ApiError(errors) => {
-//!                 println!("res: \n {:#?}", errors);
+//!                 println!("res: \n {errors:#?}");
 //!             }
 //!         }
 //!     }
 //!     Err(error) => {
-//!         println!("error \n {:#?}", error);
+//!         println!("error \n {error:#?}");
 //!     }
 //! }
 //! ```
@@ -227,19 +227,19 @@ mod tests {
         //        println!("{:#?}", result);
         match result {
             Ok(res) => {
-                println!("{:?}", res);
+                println!("{res:?}");
                 match res {
                     TransmissionResponse::ApiResponse(api_res) => {
                         assert_eq!(1, api_res.total_accepted_recipients);
                         assert_eq!(0, api_res.total_rejected_recipients);
                     }
                     TransmissionResponse::ApiError(errors) => {
-                        println!("res: \n {:#?}", errors);
+                        println!("res: \n {errors:#?}");
                     }
                 }
             }
             Err(error) => {
-                println!("error \n {:#?}", error);
+                println!("error \n {error:#?}");
             }
         }
         // attach file to email
@@ -252,19 +252,19 @@ mod tests {
         //        println!("{:#?}", result);
         match result {
             Ok(res) => {
-                println!("{:?}", res);
+                println!("{res:?}");
                 match res {
                     TransmissionResponse::ApiResponse(api_res) => {
                         assert_eq!(1, api_res.total_accepted_recipients);
                         assert_eq!(0, api_res.total_rejected_recipients);
                     }
                     TransmissionResponse::ApiError(errors) => {
-                        println!("res: \n {:#?}", errors);
+                        println!("res: \n {errors:#?}");
                     }
                 }
             }
             Err(error) => {
-                println!("error \n {:#?}", error);
+                println!("error \n {error:#?}");
             }
         }
     }

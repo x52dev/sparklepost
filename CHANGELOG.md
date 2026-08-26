@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0
+
+- Update `reqwest` dependency to `0.13`.
+- Upgrade to edition 2024.
+- Minimum supported Rust version (MSRV) is now 1.88.
+
 ## 0.5.5
 
 - Forked from `sparkpost` crate.

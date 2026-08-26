@@ -63,20 +63,20 @@ fn main() {
 
     match result {
         Ok(res) => {
-            println!("{:?}", res);
+            println!("{res:?}");
             match res {
                 TransmissionResponse::ApiResponse(api_res) => {
-                    println!("API Response: \n {:#?}", api_res);
+                    println!("API Response: \n {api_res:#?}");
                     //   assert_eq!(1, api_res.total_accepted_recipients);
                     //   assert_eq!(0, api_res.total_rejected_recipients);
                 }
                 TransmissionResponse::ApiError(errors) => {
-                    println!("Response Errors: \n {:#?}", errors);
+                    println!("Response Errors: \n {errors:#?}");
                 }
             }
         }
         Err(error) => {
-            println!("error \n {:#?}", error);
+            println!("error \n {error:#?}");
         }
     }
 }

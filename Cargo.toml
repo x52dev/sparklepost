@@ -32,3 +32,4 @@ missing_debug_implementations = { level = "deny", priority = 1 }
 
 [lints.clippy]
 clone_on_ref_ptr = { level = "deny" }
+uninlined_format_args = { level = "deny" }
