@@ -186,8 +186,6 @@ impl Message {
 
 /// Message options for a particular Message
 /// ```rust
-/// # extern crate chrono;
-/// # extern crate sparklepost;
 /// # fn main() {
 /// use chrono::prelude::*;
 /// use sparklepost::transmission::Options;

@@ -8,8 +8,6 @@ use std::convert::From;
 /// Email Recipient
 /// Example
 /// ```rust
-/// extern crate sparklepost;
-///
 /// use sparklepost::transmission::Recipient;
 ///
 /// let recipient = Recipient::from("test@test.com");
