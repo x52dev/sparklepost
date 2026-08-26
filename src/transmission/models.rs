@@ -1,16 +1,16 @@
 use serde::{
-    ser::{SerializeSeq, SerializeStruct, Serializer},
     Serialize,
+    ser::{SerializeSeq, SerializeStruct, Serializer},
 };
-use serde_json::{to_value, Value};
+use serde_json::{Value, to_value};
 use std::convert::From;
 
 /// Email Recipient
 /// Example
 /// ```rust
-/// extern crate sparkpost;
+/// extern crate sparklepost;
 ///
-/// use sparkpost::transmission::Recipient;
+/// use sparklepost::transmission::Recipient;
 ///
 /// let recipient = Recipient::from("test@test.com");
 ///  ```
@@ -77,14 +77,14 @@ impl Serialize for RecipientSet {
         S: Serializer,
     {
         match self {
-            RecipientSet::LocalList(ref list) => {
+            RecipientSet::LocalList(list) => {
                 let mut seq = serializer.serialize_seq(Some(list.len()))?;
                 for element in list {
                     seq.serialize_element(element)?;
                 }
                 seq.end()
             }
-            RecipientSet::ListName(ref list_name) => {
+            RecipientSet::ListName(list_name) => {
                 let mut s = serializer.serialize_struct("listname", 1)?;
                 s.serialize_field("list_id", list_name)?;
                 s.end()
@@ -97,7 +97,7 @@ impl Serialize for RecipientSet {
 ///
 /// ### Example
 /// ```rust
-/// use sparkpost::transmission::EmailAddress;
+/// use sparklepost::transmission::EmailAddress;
 ///
 /// let address = EmailAddress::from("test@test.com");
 ///

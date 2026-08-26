@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use serde_json::{to_value, Value};
+use serde_json::{Value, to_value};
 
 use super::models::{EmailAddress, Recipient, RecipientSet};
 
@@ -9,7 +9,7 @@ use super::models::{EmailAddress, Recipient, RecipientSet};
 /// # Examples
 ///
 /// ```
-/// use sparkpost::transmission::{Message, EmailAddress};
+/// use sparklepost::transmission::{Message, EmailAddress};
 ///
 /// let mut email = Message::new(
 ///     EmailAddress::new("marketing@example.sink.sparkpostmail.com", "Example Company")
@@ -165,7 +165,7 @@ impl Message {
 
     /// adds attachment to Message, multiple attachments allowed
     /// ``` rust
-    /// use sparkpost::transmission::{Message, Attachment};
+    /// use sparklepost::transmission::{Message, Attachment};
     ///
     /// let mut email = Message::new("marketing@example.sink.sparkpostmail.com");
     /// let attachment = Attachment::from_data(
@@ -187,10 +187,10 @@ impl Message {
 /// Message options for a particular Message
 /// ```rust
 /// # extern crate chrono;
-/// # extern crate sparkpost;
+/// # extern crate sparklepost;
 /// # fn main() {
 /// use chrono::prelude::*;
-/// use sparkpost::transmission::Options;
+/// use sparklepost::transmission::Options;
 ///
 /// let options = Options {
 ///            open_tracking: false,

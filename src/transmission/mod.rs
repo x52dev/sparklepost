@@ -3,7 +3,7 @@
 //! # Examples
 //!
 //! ```
-//! use sparkpost::transmission::{Transmission, Message, EmailAddress, TransmissionResponse};
+//! use sparklepost::transmission::{Transmission, Message, EmailAddress, TransmissionResponse};
 //!
 //! let tm = Transmission::new("api_key");
 //! // to create for EU version use
@@ -21,14 +21,14 @@
 //!
 //! match result {
 //!    Ok(res) => {
-//!         println!("{:?}", &res);
+//!         println!("{:?}", res);
 //!         match res {
 //!             TransmissionResponse::ApiResponse(api_res) => {
 //!              //   assert_eq!(1, api_res.total_accepted_recipients);
 //!              //   assert_eq!(0, api_res.total_rejected_recipients);
 //!             }
 //!             TransmissionResponse::ApiError(errors) => {
-//!                 println!("res: \n {:#?}", &errors);
+//!                 println!("res: \n {:#?}", errors);
 //!             }
 //!         }
 //!     }
@@ -39,9 +39,9 @@
 //! ```
 
 use reqwest::{
-    blocking::Client,
-    header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE},
     Error,
+    blocking::Client,
+    header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, HeaderMap, HeaderValue},
 };
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -88,7 +88,7 @@ pub enum TransmissionResponse {
 /// Currently only supports sending email message.
 ///
 /// ```
-/// use sparkpost::transmission::Transmission;
+/// use sparklepost::transmission::Transmission;
 /// let tm = Transmission::new("api_key_form_env".to_string());
 /// ```
 ///
@@ -148,7 +148,7 @@ impl Transmission {
     ///
     /// Example
     /// ```rust
-    /// use sparkpost::transmission::Transmission;
+    /// use sparklepost::transmission::Transmission;
     /// use std::collections::HashMap;
     /// let tm = Transmission::new("api_key");
     ///
@@ -227,14 +227,14 @@ mod tests {
         //        println!("{:#?}", result);
         match result {
             Ok(res) => {
-                println!("{:?}", &res);
+                println!("{:?}", res);
                 match res {
                     TransmissionResponse::ApiResponse(api_res) => {
                         assert_eq!(1, api_res.total_accepted_recipients);
                         assert_eq!(0, api_res.total_rejected_recipients);
                     }
                     TransmissionResponse::ApiError(errors) => {
-                        println!("res: \n {:#?}", &errors);
+                        println!("res: \n {:#?}", errors);
                     }
                 }
             }
@@ -252,14 +252,14 @@ mod tests {
         //        println!("{:#?}", result);
         match result {
             Ok(res) => {
-                println!("{:?}", &res);
+                println!("{:?}", res);
                 match res {
                     TransmissionResponse::ApiResponse(api_res) => {
                         assert_eq!(1, api_res.total_accepted_recipients);
                         assert_eq!(0, api_res.total_rejected_recipients);
                     }
                     TransmissionResponse::ApiError(errors) => {
-                        println!("res: \n {:#?}", &errors);
+                        println!("res: \n {:#?}", errors);
                     }
                 }
             }
