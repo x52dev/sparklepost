@@ -7,6 +7,7 @@
 ![License](https://img.shields.io/crates/l/sparklepost.svg)
 <!-- [![pipeline status](https://github.com/x52dev/sparklepost/badges/main/pipeline.svg)](https://github.com/x52dev/sparklepost/commits/main) -->
 ![Version](https://img.shields.io/badge/rustc-1.88+-ab6000.svg)
+[![Discord: Join chat](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/2uCW9xrykN)
 
 <!-- prettier-ignore-end -->
 
